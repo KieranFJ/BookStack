@@ -1,9 +1,11 @@
 <?php
+/**
+ * Text used for 'Entities' (Document Structure Elements) such as
+ * Books, Shelves, Chapters & Pages
+ */
 return [
 
-    /**
-     * Shared
-     */
+    // Shared
     'recently_created' => 'Nyligen skapat',
     'recently_created_pages' => 'Sidor som skapats nyligen',
     'recently_updated_pages' => 'Sidor som uppdaterats nyligen',
@@ -15,15 +17,18 @@ return [
     'recent_activity' => 'Aktivitet',
     'create_now' => 'Skapa en nu',
     'revisions' => 'Revisioner',
-    'meta_revision' => 'Revision #:revisionCount',
+    'meta_revision' => 'Revisions #:revisionCount',
     'meta_created' => 'Skapad :timeLength',
     'meta_created_name' => 'Skapad :timeLength av :user',
     'meta_updated' => 'Uppdaterad :timeLength',
     'meta_updated_name' => 'Uppdaterad :timeLength av :user',
-    'entity_select' => 'Entity Select',
+    'meta_owned_name' => 'Ägs av :user',
+    'entity_select' => 'Välj enhet',
     'images' => 'Bilder',
     'my_recent_drafts' => 'Mina nyaste utkast',
     'my_recently_viewed' => 'Mina senast visade sidor',
+    'my_most_viewed_favourites' => 'Mina mest visade favoriter',
+    'my_favourites' => 'Mina favoriter',
     'no_pages_viewed' => 'Du har inte visat några sidor',
     'no_pages_recently_created' => 'Inga sidor har skapats nyligen',
     'no_pages_recently_updated' => 'Inga sidor har uppdaterats nyligen',
@@ -31,25 +36,24 @@ return [
     'export_html' => 'Webb-fil',
     'export_pdf' => 'PDF-fil',
     'export_text' => 'Textfil',
+    'export_md' => 'Markdown File',
 
-    /**
-     * Permissions and restrictions
-     */
+    // Permissions and restrictions
     'permissions' => 'Rättigheter',
     'permissions_intro' => 'Dessa rättigheter kommer att överskrida eventuella rollbaserade rättigheter.',
     'permissions_enable' => 'Aktivera anpassade rättigheter',
     'permissions_save' => 'Spara rättigheter',
+    'permissions_owner' => 'Ägare',
 
-    /**
-     * Search
-     */
+    // Search
     'search_results' => 'Sökresultat',
     'search_total_results_found' => ':count resultat|:count resultat',
     'search_clear' => 'Rensa sökning',
     'search_no_pages' => 'Inga sidor matchade sökningen',
     'search_for_term' => 'Sök efter :term',
     'search_more' => 'Fler resultat',
-    'search_filters' => 'Sökfilter',
+    'search_advanced' => 'Avancerad sök',
+    'search_terms' => 'Söktermer',
     'search_content_type' => 'Innehållstyp',
     'search_exact_matches' => 'Exakta matchningar',
     'search_tags' => 'Taggar',
@@ -59,6 +63,7 @@ return [
     'search_permissions_set' => 'Har anpassade rättigheter',
     'search_created_by_me' => 'Skapade av mig',
     'search_updated_by_me' => 'Uppdaterade av mig',
+    'search_owned_by_me' => 'Ägs av mig',
     'search_date_options' => 'Datumalternativ',
     'search_updated_before' => 'Uppdaterade före',
     'search_updated_after' => 'Uppdaterade efter',
@@ -67,9 +72,40 @@ return [
     'search_set_date' => 'Ange datum',
     'search_update' => 'Uppdatera sökning',
 
-    /**
-     * Books
-     */
+    // Shelves
+    'shelf' => 'Hylla',
+    'shelves' => 'Hyllor',
+    'x_shelves' => ':count hylla|:count hyllor',
+    'shelves_long' => 'Bokhyllor',
+    'shelves_empty' => 'Du har inte skapat någon hylla',
+    'shelves_create' => 'Skapa ny hylla',
+    'shelves_popular' => 'Populära hyllor',
+    'shelves_new' => 'Nya hyllor',
+    'shelves_new_action' => 'Ny hylla',
+    'shelves_popular_empty' => 'De populäraste hyllorna kommer hamna här',
+    'shelves_new_empty' => 'De senast skapade hyllorna kommer hamna här',
+    'shelves_save' => 'Spara hylla',
+    'shelves_books' => 'Böcker i denna hylla',
+    'shelves_add_books' => 'Lägg till böcker till hyllan',
+    'shelves_drag_books' => 'Dra böcker hit för att lägga dem på hyllan',
+    'shelves_empty_contents' => 'Denna hylla har inga böcker än',
+    'shelves_edit_and_assign' => 'Redigera hyllan för att lägga till böcker',
+    'shelves_edit_named' => 'Ändra hyllan :name',
+    'shelves_edit' => 'Ändra bokhylla',
+    'shelves_delete' => 'Radera bokhylla',
+    'shelves_delete_named' => 'Radera bokhyllan :name',
+    'shelves_delete_explain' => "Detta kommer radera bokhyllan ':name'. Böckerna på hyllan kommer finnas kvar.",
+    'shelves_delete_confirmation' => 'Är du säker på att du vill radera hyllan?',
+    'shelves_permissions' => 'Bokhyllerättigheter',
+    'shelves_permissions_updated' => 'Bokhyllerättigheterna har ändrats',
+    'shelves_permissions_active' => 'Bokhyllerättigheterna är aktiva',
+    'shelves_permissions_cascade_warning' => 'Permissions on bookshelves do not automatically cascade to contained books. This is because a book can exist on multiple shelves. Permissions can however be copied down to child books using the option found below.',
+    'shelves_copy_permissions_to_books' => 'Kopiera rättigheter till böcker',
+    'shelves_copy_permissions' => 'Kopiera rättigheter',
+    'shelves_copy_permissions_explain' => 'Detta kommer kopiera hyllans rättigheter till alla böcker på den. Se till att du har sparat alla ändringar innan du går vidare.',
+    'shelves_copy_permission_success' => 'Hyllans rättigheter har kopierats till :count böcker',
+
+    // Books
     'book' => 'Bok',
     'books' => 'Böcker',
     'x_books' => ':count bok|:count böcker',
@@ -108,9 +144,7 @@ return [
     'books_sort_show_other' => 'Visa andra böcker',
     'books_sort_save' => 'Spara ordning',
 
-    /**
-     * Chapters
-     */
+    // Chapters
     'chapter' => 'Kapitel',
     'chapters' => 'Kapitel',
     'x_chapters' => ':count kapitel|:count kapitel',
@@ -119,7 +153,7 @@ return [
     'chapters_create' => 'Skapa nytt kapitel',
     'chapters_delete' => 'Radera kapitel',
     'chapters_delete_named' => 'Radera kapitlet :chapterName',
-    'chapters_delete_explain' => 'Du håller på att ta bort kapitlet \':chapterName\'. Alla sidor kommer att flyttas direkt in i den aktuella boken istället.',
+    'chapters_delete_explain' => 'Detta kommer att ta bort kapitlet med namnet \':chapterName\'. Alla sidor som finns inom detta kapitel kommer också att raderas.',
     'chapters_delete_confirm' => 'Är du säker på att du vill ta bort det här kapitlet?',
     'chapters_edit' => 'Redigera kapitel',
     'chapters_edit_named' => 'Redigera kapitel :chapterName',
@@ -133,9 +167,7 @@ return [
     'chapters_permissions_success' => 'Rättigheterna för kapitlet har uppdaterats',
     'chapters_search_this' => 'Sök i detta kapitel',
 
-    /**
-     * Pages
-     */
+    // Pages
     'page' => 'Sida',
     'pages' => 'Sidor',
     'x_pages' => ':count sida|:count sidor',
@@ -152,7 +184,7 @@ return [
     'pages_delete_confirm' => 'Är du säker på att du vill ta bort den här sidan?',
     'pages_delete_draft_confirm' => 'Är du säker på att du vill ta bort det här utkastet?',
     'pages_editing_named' => 'Redigerar sida :pageName',
-    'pages_edit_toggle_header' => 'Växla sidhuvud',
+    'pages_edit_draft_options' => 'Inställningar för utkast',
     'pages_edit_save_draft' => 'Spara utkast',
     'pages_edit_draft' => 'Redigera utkast',
     'pages_editing_draft' => 'Redigerar utkast',
@@ -179,14 +211,15 @@ return [
     'pages_copy_success' => 'Sidan har kopierats',
     'pages_permissions' => 'Rättigheter för sida',
     'pages_permissions_success' => 'Rättigheterna för sidan har uppdaterats',
-    'pages_revision' => 'Revision',
+    'pages_revision' => 'Revidering',
     'pages_revisions' => 'Sidrevisioner',
     'pages_revisions_named' => 'Sidrevisioner för :pageName',
     'pages_revision_named' => 'Sidrevision för :pageName',
+    'pages_revision_restored_from' => 'Återställd från #:id; :summary',
     'pages_revisions_created_by' => 'Skapad av',
     'pages_revisions_date' => 'Revisionsdatum',
     'pages_revisions_number' => '#',
-    'pages_revisions_numbered' => 'Revision #:id',
+    'pages_revisions_numbered' => 'Revisions #:id',
     'pages_revisions_numbered_changes' => 'Revision #:id ändringar',
     'pages_revisions_changelog' => 'Ändringslogg',
     'pages_revisions_changes' => 'Ändringar',
@@ -201,6 +234,7 @@ return [
     'pages_initial_name' => 'Ny sida',
     'pages_editing_draft_notification' => 'Du redigerar just nu ett utkast som senast sparades :timeDiff.',
     'pages_draft_edited_notification' => 'Denna sida har uppdaterats sen dess. Vi rekommenderar att du förkastar dina ändringar.',
+    'pages_draft_page_changed_since_creation' => 'This page has been updated since this draft was created. It is recommended that you discard this draft or take care not to overwrite any page changes.',
     'pages_draft_edit_active' => [
         'start_a' => ':count har börjat redigera den här sidan',
         'start_b' => ':userName har börjat redigera den här sidan',
@@ -210,53 +244,20 @@ return [
     ],
     'pages_draft_discarded' => 'Utkastet har tagits bort. Redigeringsverktyget har uppdaterats med aktuellt innehåll.',
     'pages_specific' => 'Specifik sida',
+    'pages_is_template' => 'Sidmall',
 
-    /**
-     * Shelves
-     */
-    'shelf' => 'Hylla',
-    'shelves' => 'Hyllor',
-    'x_shelves' => ':count hylla|:count hyllor',
-    'shelves_long' => 'Bokhyllor',
-    'shelves_empty' => 'Du har inte skapat någon hylla',
-    'shelves_create' => 'Skapa ny hylla',
-    'shelves_popular' => 'Populära hyllor',
-    'shelves_new' => 'Nya hyllor',
-    'shelves_new_action' => 'Ny hylla',
-    'shelves_popular_empty' => 'De populäraste hyllorna kommer hamna här',
-    'shelves_new_empty' => 'De senast skapade hyllorna kommer hamna här',
-    'shelves_save' => 'Spara hylla',
-    'shelves_books' => 'Böcker i denna hylla',
-    'shelves_add_books' => 'Lägg till böcker till hyllan',
-    'shelves_drag_books' => 'Dra böcker hit för att lägga dem på hyllan',
-    'shelves_empty_contents' => 'Denna hylla har inga böcker än',
-    'shelves_edit_and_assign' => 'Redigera hyllan för att lägga till böcker',
-    'shelves_edit_named' => 'Ändra hyllan :name',
-    'shelves_edit' => 'Ändra bokhylla',
-    'shelves_delete' => 'Radera bokhylla',
-    'shelves_delete_named' => 'Radera bokhyllan :name',
-    'shelves_delete_explain' => "Detta kommer radera bokhyllan ':name'. Böckerna på hyllan kommer finnas kvar.",
-    'shelves_delete_confirmation' => 'Är du säker på att du vill radera hyllan?',
-    'shelves_permissions' => 'Bokhyllerättigheter',
-    'shelves_permissions_updated' => 'Bokhyllerättigheterna har ändrats',
-    'shelves_permissions_active' => 'Bokhyllerättigheterna är aktiva',
-    'shelves_copy_permissions_to_books' => 'Kopiera rättigheter till böcker',
-    'shelves_copy_permissions' => 'Kopiera rättigheter',
-    'shelves_copy_permissions_explain' => 'Detta kommer kopiera hyllans rättigheter till alla böcker på den. Se till att du har sparat alla ändringar innan du går vidare.',
-    'shelves_copy_permission_success' => 'Hyllans rättigheter har kopierats till :count böcker',
-
-    /**
-     * Editor sidebar
-     */
-    'shelf_tags' => 'Hylltaggar',
+    // Editor Sidebar
     'page_tags' => 'Sidtaggar',
     'chapter_tags' => 'Kapiteltaggar',
     'book_tags' => 'Boktaggar',
+    'shelf_tags' => 'Hylltaggar',
     'tag' => 'Tagg',
     'tags' =>  'Taggar',
+    'tag_name' =>  'Etikettnamn',
     'tag_value' => 'Taggvärde (Frivilligt)',
     'tags_explain' => "Lägg till taggar för att kategorisera ditt innehåll bättre. \n Du kan tilldela ett värde till en tagg för ännu bättre organisering.",
     'tags_add' => 'Lägg till ännu en tagg',
+    'tags_remove' => 'Ta bort denna etikett',
     'attachments' => 'Bilagor',
     'attachments_explain' => 'Ladda upp filer eller bifoga länkar till ditt innehåll. Dessa visas i sidokolumnen.',
     'attachments_explain_instant_save' => 'Ändringar här sparas omgående.',
@@ -264,7 +265,7 @@ return [
     'attachments_upload' => 'Ladda upp fil',
     'attachments_link' => 'Bifoga länk',
     'attachments_set_link' => 'Ange länk',
-    'attachments_delete_confirm' => 'Klicka på "ta bort" igen för att bekräfta att du vill ta bort bilagan.',
+    'attachments_delete' => 'Är du säker på att du vill ta bort bilagan?',
     'attachments_dropzone' => 'Släpp filer här eller klicka för att ladda upp',
     'attachments_no_files' => 'Inga filer har laddats upp',
     'attachments_explain_link' => 'Du kan bifoga en länk om du inte vill ladda upp en fil. Detta kan vara en länk till en annan sida eller till en fil i molnet.',
@@ -273,6 +274,7 @@ return [
     'attachments_link_url' => 'Länk till fil',
     'attachments_link_url_hint' => 'URL till sida eller fil',
     'attach' => 'Bifoga',
+    'attachments_insert_link' => 'Lägg till bilagelänk till sida',
     'attachments_edit_file' => 'Redigera fil',
     'attachments_edit_file_name' => 'Filnamn',
     'attachments_edit_drop_upload' => 'Släpp filer här eller klicka för att ladda upp och skriva över',
@@ -282,10 +284,14 @@ return [
     'attachments_file_uploaded' => 'Filen har laddats upp',
     'attachments_file_updated' => 'Filen har uppdaterats',
     'attachments_link_attached' => 'Länken har bifogats till sidan',
+    'templates' => 'Mallar',
+    'templates_set_as_template' => 'Sidan är en mall',
+    'templates_explain_set_as_template' => 'Du kan använda denna sida som en mall så att dess innehåll kan användas när du skapar andra sidor. Andra användare kommer att kunna använda denna mall om de har visningsrättigheter för den här sidan.',
+    'templates_replace_content' => 'Ersätt sidinnehåll',
+    'templates_append_content' => 'Lägg till till sidans innehåll',
+    'templates_prepend_content' => 'Lägg till före sidans innehåll',
 
-    /**
-     * Profile View
-     */
+    // Profile View
     'profile_user_for_x' => 'Användare i :time',
     'profile_created_content' => 'Skapat innehåll',
     'profile_not_created_pages' => ':userName har inte skapat några sidor',
@@ -293,9 +299,7 @@ return [
     'profile_not_created_books' => ':userName har inte skapat några böcker',
     'profile_not_created_shelves' => ':userName har inte skapat några hyllor',
 
-    /**
-     * Comments
-     */
+    // Comments
     'comment' => 'Kommentar',
     'comments' => 'Kommentarer',
     'comment_add' => 'Lägg till kommentar',
@@ -313,11 +317,9 @@ return [
     'comment_delete_confirm' => 'Är du säker på att du vill ta bort den här kommentaren?',
     'comment_in_reply_to' => 'Som svar på :commentId',
 
-    /**
-     * Revision
-     */
+    // Revision
     'revision_delete_confirm' => 'Är du säker på att du vill radera den här versionen?',
+    'revision_restore_confirm' => 'Är du säker på att du vill använda denna revision? Det nuvarande innehållet kommer att ersättas.',
     'revision_delete_success' => 'Revisionen raderad',
-    'revision_cannot_delete_latest' => 'Det går inte att ta bort den senaste versionen.',
-    'revision_restore_confirm' => 'Är du säker på att du vill använda denna revision? Det nuvarande innehållet kommer att ersättas.'
+    'revision_cannot_delete_latest' => 'Det går inte att ta bort den senaste versionen.'
 ];

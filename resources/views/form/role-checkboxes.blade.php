@@ -2,11 +2,11 @@
 <div class="toggle-switch-list dual-column-content">
     @foreach($roles as $role)
         <div>
-            @include('components.custom-checkbox', [
-                'name' => $name . '[' . str_replace('.', 'DOT', $role->name) . ']',
+            @include('form.custom-checkbox', [
+                'name' => $name . '[' . strval($role->id) . ']',
                 'label' => $role->display_name,
                 'value' => $role->id,
-                'checked' => old($name . '.' . str_replace('.', 'DOT', $role->name)) || (!old('name') && isset($model) && $model->hasRole($role->name))
+                'checked' => old($name . '.' . strval($role->id)) || (!old('name') && isset($model) && $model->hasRole($role->id))
             ])
         </div>
     @endforeach

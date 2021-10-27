@@ -1,11 +1,11 @@
-<?php namespace BookStack\Http\Controllers;
+<?php
 
+namespace BookStack\Http\Controllers;
+
+use BookStack\Actions\ActivityType;
 use BookStack\Auth\User;
 use BookStack\Uploads\ImageRepo;
-use BookStack\Uploads\ImageService;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Setting;
 
 class SettingController extends Controller
 {
@@ -13,18 +13,14 @@ class SettingController extends Controller
 
     /**
      * SettingController constructor.
-     * @param $imageRepo
      */
     public function __construct(ImageRepo $imageRepo)
     {
         $this->imageRepo = $imageRepo;
-        parent::__construct();
     }
-
 
     /**
      * Display a listing of the settings.
-     * @return Response
      */
     public function index()
     {
@@ -35,35 +31,33 @@ class SettingController extends Controller
         $version = trim(file_get_contents(base_path('version')));
 
         return view('settings.index', [
-            'version' => $version,
-            'guestUser' => User::getDefault()
+            'version'   => $version,
+            'guestUser' => User::getDefault(),
         ]);
     }
 
     /**
      * Update the specified settings in storage.
-     * @param  Request $request
-     * @return Response
      */
     public function update(Request $request)
     {
-        $this->preventAccessForDemoUsers();
+        $this->preventAccessInDemoMode();
         $this->checkPermission('settings-manage');
         $this->validate($request, [
-            'app_logo' => $this->imageRepo->getImageValidationRules(),
+            'app_logo' => 'nullable|' . $this->getImageValidationRules(),
         ]);
 
         // Cycles through posted settings and update them
         foreach ($request->all() as $name => $value) {
+            $key = str_replace('setting-', '', trim($name));
             if (strpos($name, 'setting-') !== 0) {
                 continue;
             }
-            $key = str_replace('setting-', '', trim($name));
             setting()->put($key, $value);
         }
 
         // Update logo image if set
-        if ($request->has('app_logo')) {
+        if ($request->hasFile('app_logo')) {
             $logoFile = $request->file('app_logo');
             $this->imageRepo->destroyByType('system');
             $image = $this->imageRepo->saveNew($logoFile, 'system', 0, null, 86);
@@ -76,51 +70,11 @@ class SettingController extends Controller
             setting()->remove('app-logo');
         }
 
-        session()->flash('success', trans('settings.settings_save_success'));
-        return redirect('/settings');
-    }
+        $section = $request->get('section', '');
+        $this->logActivity(ActivityType::SETTINGS_UPDATE, $section);
+        $this->showSuccessNotification(trans('settings.settings_save_success'));
+        $redirectLocation = '/settings#' . $section;
 
-    /**
-     * Show the page for application maintenance.
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
-     */
-    public function showMaintenance()
-    {
-        $this->checkPermission('settings-manage');
-        $this->setPageTitle(trans('settings.maint'));
-
-        // Get application version
-        $version = trim(file_get_contents(base_path('version')));
-
-        return view('settings.maintenance', ['version' => $version]);
-    }
-
-    /**
-     * Action to clean-up images in the system.
-     * @param Request $request
-     * @param ImageService $imageService
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
-     */
-    public function cleanupImages(Request $request, ImageService $imageService)
-    {
-        $this->checkPermission('settings-manage');
-
-        $checkRevisions = !($request->get('ignore_revisions', 'false') === 'true');
-        $dryRun = !($request->has('confirm'));
-
-        $imagesToDelete = $imageService->deleteUnusedImages($checkRevisions, $dryRun);
-        $deleteCount = count($imagesToDelete);
-        if ($deleteCount === 0) {
-            session()->flash('warning', trans('settings.maint_image_cleanup_nothing_found'));
-            return redirect('/settings/maintenance')->withInput();
-        }
-
-        if ($dryRun) {
-            session()->flash('cleanup-images-warning', trans('settings.maint_image_cleanup_warning', ['count' => $deleteCount]));
-        } else {
-            session()->flash('success', trans('settings.maint_image_cleanup_success', ['count' => $deleteCount]));
-        }
-
-        return redirect('/settings/maintenance#image-cleanup')->withInput();
+        return redirect(rtrim($redirectLocation, '#'));
     }
 }

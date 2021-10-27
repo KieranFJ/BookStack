@@ -1,10 +1,14 @@
-<?php namespace Tests;
+<?php
 
-use BookStack\Entities\Bookshelf;
+namespace Tests;
+
+use BookStack\Auth\Role;
+use BookStack\Auth\User;
+use BookStack\Entities\Models\Bookshelf;
+use BookStack\Entities\Models\Page;
 
 class HomepageTest extends TestCase
 {
-
     public function test_default_homepage_visible()
     {
         $this->asEditor();
@@ -39,8 +43,8 @@ class HomepageTest extends TestCase
         $content = str_repeat('This is the body content of my custom homepage.', 20);
         $customPage = $this->newPage(['name' => $name, 'html' => $content]);
         $this->setSettings([
-            'app-homepage' => $customPage->id,
-            'app-homepage-type' => 'page'
+            'app-homepage'      => $customPage->id,
+            'app-homepage-type' => 'page',
         ]);
 
         $homeVisit = $this->get('/');
@@ -65,14 +69,33 @@ class HomepageTest extends TestCase
         $content = str_repeat('This is the body content of my custom homepage.', 20);
         $customPage = $this->newPage(['name' => $name, 'html' => $content]);
         $this->setSettings([
-            'app-homepage' => $customPage->id,
-            'app-homepage-type' => 'default'
+            'app-homepage'      => $customPage->id,
+            'app-homepage-type' => 'default',
         ]);
 
         $pageDeleteReq = $this->delete($customPage->getUrl());
         $pageDeleteReq->assertStatus(302);
         $pageDeleteReq->assertSessionHas('success');
         $pageDeleteReq->assertSessionMissing('error');
+    }
+
+    public function test_custom_homepage_renders_includes()
+    {
+        $this->asEditor();
+        /** @var Page $included */
+        $included = Page::query()->first();
+        $content = str_repeat('This is the body content of my custom homepage.', 20);
+        $included->html = $content;
+        $included->save();
+
+        $name = 'My custom homepage';
+        $customPage = $this->newPage(['name' => $name, 'html' => '{{@' . $included->id . '}}']);
+        $this->setSettings(['app-homepage' => $customPage->id]);
+        $this->setSettings(['app-homepage-type' => 'page']);
+
+        $homeVisit = $this->get('/');
+        $homeVisit->assertSee($name);
+        $homeVisit->assertSee($content);
     }
 
     public function test_set_book_homepage()
@@ -98,16 +121,16 @@ class HomepageTest extends TestCase
     {
         $editor = $this->getEditor();
         setting()->putUser($editor, 'bookshelves_view_type', 'grid');
+        $shelf = Bookshelf::query()->firstOrFail();
 
         $this->setSettings(['app-homepage-type' => 'bookshelves']);
 
         $this->asEditor();
         $homeVisit = $this->get('/');
         $homeVisit->assertSee('Shelves');
-        $homeVisit->assertSee('bookshelf-grid-item grid-card');
         $homeVisit->assertSee('grid-card-content');
-        $homeVisit->assertSee('grid-card-footer');
         $homeVisit->assertSee('featured-image-container');
+        $homeVisit->assertElementContains('.grid-card', $shelf->name);
 
         $this->setSettings(['app-homepage-type' => false]);
         $this->test_default_homepage_visible();
@@ -140,5 +163,15 @@ class HomepageTest extends TestCase
         $homeVisit = $this->get('/');
         $homeVisit->assertElementContains('.content-wrap', $shelf->name);
         $homeVisit->assertElementContains('.content-wrap', $book->name);
+    }
+
+    public function test_new_users_dont_have_any_recently_viewed()
+    {
+        $user = factory(User::class)->create();
+        $viewRole = Role::getRole('Viewer');
+        $user->attachRole($viewRole);
+
+        $homeVisit = $this->actingAs($user)->get('/');
+        $homeVisit->assertElementContains('#recently-viewed', 'You have not viewed any pages');
     }
 }

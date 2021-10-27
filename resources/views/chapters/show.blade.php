@@ -1,32 +1,36 @@
-@extends('tri-layout')
+@extends('layouts.tri')
 
 @section('container-attrs')
-    id="entity-dashboard"
-    entity-id="{{ $chapter->id }}"
-    entity-type="chapter"
+    component="entity-search"
+    option:entity-search:entity-id="{{ $chapter->id }}"
+    option:entity-search:entity-type="chapter"
 @stop
+
+@push('social-meta')
+    <meta property="og:description" content="{{ Str::limit($chapter->description, 100, '...') }}">
+@endpush
 
 @section('body')
 
     <div class="mb-m print-hidden">
-        @include('partials.breadcrumbs', ['crumbs' => [
+        @include('entities.breadcrumbs', ['crumbs' => [
             $chapter->book,
             $chapter,
         ]])
     </div>
 
     <main class="content-wrap card">
-        <h1 class="break-text" v-pre>{{ $chapter->name }}</h1>
-        <div class="chapter-content" v-show="!searching">
-            <p v-pre class="text-muted break-text">{!! nl2br(e($chapter->description)) !!}</p>
+        <h1 class="break-text">{{ $chapter->name }}</h1>
+        <div refs="entity-search@contentView" class="chapter-content">
+            <p class="text-muted break-text">{!! nl2br(e($chapter->description)) !!}</p>
             @if(count($pages) > 0)
-                <div v-pre class="entity-list book-contents">
+                <div class="entity-list book-contents">
                     @foreach($pages as $page)
-                        @include('pages.list-item', ['page' => $page])
+                        @include('pages.parts.list-item', ['page' => $page])
                     @endforeach
                 </div>
             @else
-                <div class="mt-xl" v-pre>
+                <div class="mt-xl">
                     <hr>
                     <p class="text-muted italic mb-m mt-xl">{{ trans('entities.chapters_empty') }}</p>
 
@@ -49,8 +53,10 @@
             @endif
         </div>
 
-        @include('partials.entity-dashboard-search-results')
+        @include('entities.search-results')
     </main>
+
+    @include('entities.sibling-navigation', ['next' => $next, 'previous' => $previous])
 
 @stop
 
@@ -59,7 +65,7 @@
     <div class="mb-xl">
         <h5>{{ trans('common.details') }}</h5>
         <div class="blended-links text-small text-muted">
-            @include('partials.entity-meta', ['entity' => $chapter])
+            @include('entities.meta', ['entity' => $chapter])
 
             @if($book->restricted)
                 <div class="active-restriction">
@@ -123,22 +129,27 @@
 
             <hr class="primary-background"/>
 
-            @include('partials.entity-export-menu', ['entity' => $chapter])
+            @if(signedInUser())
+                @include('entities.favourite-action', ['entity' => $chapter])
+            @endif
+            @if(userCan('content-export'))
+                @include('entities.export-menu', ['entity' => $chapter])
+            @endif
         </div>
     </div>
 @stop
 
 @section('left')
 
-    @include('partials.entity-dashboard-search-box')
+    @include('entities.search-form', ['label' => trans('entities.chapters_search_this')])
 
     @if($chapter->tags->count() > 0)
         <div class="mb-xl">
-            @include('components.tag-list', ['entity' => $chapter])
+            @include('entities.tag-list', ['entity' => $chapter])
         </div>
     @endif
 
-    @include('partials.book-tree', ['book' => $book, 'sidebarTree' => $sidebarTree])
+    @include('entities.book-tree', ['book' => $book, 'sidebarTree' => $sidebarTree])
 @stop
 
 

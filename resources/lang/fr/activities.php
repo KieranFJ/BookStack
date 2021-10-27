@@ -1,11 +1,9 @@
 <?php
-
+/**
+ * Activity text strings.
+ * Is used for all the text within activity logs & notifications.
+ */
 return [
-
-    /**
-     * Activity text strings.
-     * Is used for all the text within activity logs & notifications.
-     */
 
     // Pages
     'page_create'                 => 'a créé la page',
@@ -28,23 +26,32 @@ return [
     'chapter_move'                => 'a déplacé le chapitre',
 
     // Books
-    'book_create'                 => 'a créé le livre',
+    'book_create'                 => 'a créé un livre',
     'book_create_notification'    => 'Livre créé avec succès',
     'book_update'                 => 'a modifié le livre',
     'book_update_notification'    => 'Livre modifié avec succès',
-    'book_delete'                 => 'a supprimé le livre',
+    'book_delete'                 => 'a supprimé un livre',
     'book_delete_notification'    => 'Livre supprimé avec succès',
     'book_sort'                   => 'a réordonné le livre',
     'book_sort_notification'      => 'Livre réordonné avec succès',
 
     // Bookshelves
-    'bookshelf_create'                 => 'a créé l\'étagère',
+    'bookshelf_create'            => 'a créé l\'étagère',
     'bookshelf_create_notification'    => 'Étagère créée avec succès',
     'bookshelf_update'                 => 'a modifié l\'étagère',
     'bookshelf_update_notification'    => 'Étagère modifiée avec succès',
     'bookshelf_delete'                 => 'a supprimé l\'étagère',
     'bookshelf_delete_notification'    => 'Étagère supprimée avec succès',
 
+    // Favourites
+    'favourite_add_notification' => '":name" a été ajouté dans vos favoris',
+    'favourite_remove_notification' => '":name" a été supprimé de vos favoris',
+
+    // MFA
+    'mfa_setup_method_notification' => 'Méthode multi-facteurs configurée avec succès',
+    'mfa_remove_method_notification' => 'Méthode multi-facteurs supprimée avec succès',
+
     // Other
-    'commented_on'                => 'a commenté'
+    'commented_on'                => 'a commenté',
+    'permissions_update'          => 'a mis à jour les autorisations sur',
 ];

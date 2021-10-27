@@ -1,6 +1,8 @@
-<?php namespace Entity;
+<?php
 
-use BookStack\Entities\Page;
+namespace Tests\Entity;
+
+use BookStack\Entities\Models\Page;
 use Tests\TestCase;
 
 class PageTemplateTest extends TestCase
@@ -27,14 +29,14 @@ class PageTemplateTest extends TestCase
         $this->actingAs($editor);
 
         $pageUpdateData = [
-            'name' => $page->name,
-            'html' => $page->html,
+            'name'     => $page->name,
+            'html'     => $page->html,
             'template' => 'true',
         ];
 
         $this->put($page->getUrl(), $pageUpdateData);
         $this->assertDatabaseHas('pages', [
-            'id' => $page->id,
+            'id'       => $page->id,
             'template' => false,
         ]);
 
@@ -42,7 +44,7 @@ class PageTemplateTest extends TestCase
 
         $this->put($page->getUrl(), $pageUpdateData);
         $this->assertDatabaseHas('pages', [
-            'id' => $page->id,
+            'id'       => $page->id,
             'template' => true,
         ]);
     }
@@ -64,7 +66,7 @@ class PageTemplateTest extends TestCase
         $templateFetch = $this->get('/templates/' . $page->id);
         $templateFetch->assertStatus(200);
         $templateFetch->assertJson([
-            'html' => $content,
+            'html'     => $content,
             'markdown' => '',
         ]);
     }
@@ -86,5 +88,4 @@ class PageTemplateTest extends TestCase
         $templatesFetch->assertSee($page->name);
         $templatesFetch->assertSee('pagination');
     }
-
 }

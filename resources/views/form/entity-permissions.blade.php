@@ -2,24 +2,39 @@
     {!! csrf_field() !!}
     <input type="hidden" name="_method" value="PUT">
 
-    <p class="mb-none">{{ trans('entities.permissions_intro') }}</p>
-
-    <div class="form-group">
-        @include('form.checkbox', [
-            'name' => 'restricted',
-            'label' => trans('entities.permissions_enable'),
-        ])
+    <div class="grid half left-focus v-center">
+        <div>
+            <p class="mb-none mt-m">{{ trans('entities.permissions_intro') }}</p>
+            <div>
+                @include('form.checkbox', [
+                    'name' => 'restricted',
+                    'label' => trans('entities.permissions_enable'),
+                ])
+            </div>
+        </div>
+        <div>
+            <div class="form-group">
+                <label for="owner">{{ trans('entities.permissions_owner') }}</label>
+                @include('form.user-select', ['user' => $model->ownedBy, 'name' => 'owned_by', 'compact' => false])
+            </div>
+        </div>
     </div>
+
+    @if($model instanceof \BookStack\Entities\Models\Bookshelf)
+        <p class="text-warn">{{ trans('entities.shelves_permissions_cascade_warning') }}</p>
+    @endif
+
+    <hr>
 
     <table permissions-table class="table permissions-table toggle-switch-list" style="{{ !$model->restricted ? 'display: none' : '' }}">
         <tr>
             <th>{{ trans('common.role') }}</th>
-            <th @if($model->isA('page')) colspan="3" @else colspan="4" @endif>
+            <th colspan="{{ $model->isA('page') ? '3' : '4'  }}">
                 {{ trans('common.actions') }}
                 <a href="#" permissions-table-toggle-all class="text-small ml-m text-primary">{{ trans('common.toggle_all') }}</a>
             </th>
         </tr>
-        @foreach($roles as $role)
+        @foreach(\BookStack\Auth\Role::restrictable() as $role)
             <tr>
                 <td width="33%" class="pt-m">
                     {{ $role->display_name }}

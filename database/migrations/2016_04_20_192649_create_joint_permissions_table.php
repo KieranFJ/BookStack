@@ -1,7 +1,8 @@
 <?php
 
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Str;
 
 class CreateJointPermissionsTable extends Migration
 {
@@ -42,18 +43,18 @@ class CreateJointPermissionsTable extends Migration
 
         // Create the new public role
         $publicRoleData = [
-            'name' => 'public',
+            'name'         => 'public',
             'display_name' => 'Public',
-            'description' => 'The role given to public visitors if allowed',
-            'system_name' => 'public',
-            'hidden' => true,
-            'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
-            'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
+            'description'  => 'The role given to public visitors if allowed',
+            'system_name'  => 'public',
+            'hidden'       => true,
+            'created_at'   => \Carbon\Carbon::now()->toDateTimeString(),
+            'updated_at'   => \Carbon\Carbon::now()->toDateTimeString(),
         ];
 
         // Ensure unique name
         while (DB::table('roles')->where('name', '=', $publicRoleData['display_name'])->count() > 0) {
-            $publicRoleData['display_name'] = $publicRoleData['display_name'] . str_random(2);
+            $publicRoleData['display_name'] = $publicRoleData['display_name'] . Str::random(2);
         }
         $publicRoleId = DB::table('roles')->insertGetId($publicRoleData);
 
@@ -67,7 +68,7 @@ class CreateJointPermissionsTable extends Migration
                 // Assign view permission to public
                 DB::table('permission_role')->insert([
                     'permission_id' => $permission->id,
-                    'role_id' => $publicRoleId
+                    'role_id'       => $publicRoleId,
                 ]);
             }
         }

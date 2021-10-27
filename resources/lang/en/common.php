@@ -33,11 +33,18 @@ return [
     'copy' => 'Copy',
     'reply' => 'Reply',
     'delete' => 'Delete',
+    'delete_confirm' => 'Confirm Deletion',
     'search' => 'Search',
     'search_clear' => 'Clear Search',
     'reset' => 'Reset',
     'remove' => 'Remove',
     'add' => 'Add',
+    'configure' => 'Configure',
+    'fullscreen' => 'Fullscreen',
+    'favourite' => 'Favourite',
+    'unfavourite' => 'Unfavourite',
+    'next' => 'Next',
+    'previous' => 'Previous',
 
     // Sort Options
     'sort_options' => 'Sort Options',
@@ -45,6 +52,7 @@ return [
     'sort_ascending' => 'Sort Ascending',
     'sort_descending' => 'Sort Descending',
     'sort_name' => 'Name',
+    'sort_default' => 'Default',
     'sort_created_at' => 'Created Date',
     'sort_updated_at' => 'Updated Date',
 
@@ -53,6 +61,7 @@ return [
     'no_activity' => 'No activity to show',
     'no_items' => 'No items available',
     'back_to_top' => 'Back to top',
+    'skip_to_main_content' => 'Skip to main content',
     'toggle_details' => 'Toggle Details',
     'toggle_thumbnails' => 'Toggle Thumbnails',
     'details' => 'Details',
@@ -62,15 +71,25 @@ return [
     'breadcrumb' => 'Breadcrumb',
 
     // Header
+    'header_menu_expand' => 'Expand Header Menu',
     'profile_menu' => 'Profile Menu',
     'view_profile' => 'View Profile',
     'edit_profile' => 'Edit Profile',
+    'dark_mode' => 'Dark Mode',
+    'light_mode' => 'Light Mode',
 
     // Layout tabs
     'tab_info' => 'Info',
+    'tab_info_label' => 'Tab: Show Secondary Information',
     'tab_content' => 'Content',
+    'tab_content_label' => 'Tab: Show Primary Content',
 
     // Email Content
     'email_action_help' => 'If you’re having trouble clicking the ":actionText" button, copy and paste the URL below into your web browser:',
     'email_rights' => 'All rights reserved',
+
+    // Footer Link Options
+    // Not directly used but available for convenience to users.
+    'privacy_policy' => 'Privacy Policy',
+    'terms_of_service' => 'Terms of Service',
 ];

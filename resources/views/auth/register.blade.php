@@ -1,4 +1,4 @@
-@extends('simple-layout')
+@extends('layouts.simple')
 
 @section('content')
     <div class="container very-small">
@@ -6,7 +6,7 @@
         <div class="my-l">&nbsp;</div>
 
         <div class="card content-wrap auto-height">
-            <h1 class="list-heading">{{ title_case(trans('auth.sign_up')) }}</h1>
+            <h1 class="list-heading">{{ Str::title(trans('auth.sign_up')) }}</h1>
 
             <form action="{{ url("/register") }}" method="POST" class="mt-l stretch-inputs">
                 {!! csrf_field() !!}
@@ -35,20 +35,20 @@
                     </div>
                 </div>
 
-
             </form>
 
             @if(count($socialDrivers) > 0)
                 <hr class="my-l">
                 @foreach($socialDrivers as $driver => $name)
                     <div>
-                        <a id="social-register-{{$driver}}" class="button block outline svg" href="{{ url("/register/service/" . $driver) }}">
+                        <a id="social-register-{{$driver}}" class="button outline svg" href="{{ url("/register/service/" . $driver) }}">
                             @icon('auth/' . $driver)
-                            {{ trans('auth.sign_up_with', ['socialDriver' => $name]) }}
+                            <span>{{ trans('auth.sign_up_with', ['socialDriver' => $name]) }}</span>
                         </a>
                     </div>
                 @endforeach
             @endif
+
         </div>
     </div>
 @stop

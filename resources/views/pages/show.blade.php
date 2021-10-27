@@ -1,9 +1,13 @@
-@extends('tri-layout')
+@extends('layouts.tri')
+
+@push('social-meta')
+    <meta property="og:description" content="{{ Str::limit($page->text, 100, '...') }}">
+@endpush
 
 @section('body')
 
     <div class="mb-m print-hidden">
-        @include('partials.breadcrumbs', ['crumbs' => [
+        @include('entities.breadcrumbs', ['crumbs' => [
             $page->book,
             $page->hasChapter() ? $page->chapter : null,
             $page,
@@ -11,14 +15,22 @@
     </div>
 
     <main class="content-wrap card">
-        <div class="page-content" page-display="{{ $page->id }}">
-            @include('pages.pointer', ['page' => $page])
-            @include('pages.page-display')
+        <div class="page-content clearfix" page-display="{{ $page->id }}">
+            @include('pages.parts.pointer', ['page' => $page])
+            @include('pages.parts.page-display')
         </div>
     </main>
 
+    @include('entities.sibling-navigation', ['next' => $next, 'previous' => $previous])
+
     @if ($commentsEnabled)
-        <div class="container small p-none comments-container mb-l print-hidden">
+        @if(($previous || $next))
+            <div class="px-xl">
+                <hr class="darker">
+            </div>
+        @endif
+
+        <div class="px-xl comments-container mb-l print-hidden">
             @include('comments.comments', ['page' => $page])
             <div class="clearfix"></div>
         </div>
@@ -29,7 +41,7 @@
 
     @if($page->tags->count() > 0)
         <section>
-            @include('components.tag-list', ['entity' => $page])
+            @include('entities.tag-list', ['entity' => $page])
         </section>
     @endif
 
@@ -37,14 +49,7 @@
         <div id="page-attachments" class="mb-l">
             <h5>{{ trans('entities.pages_attachments') }}</h5>
             <div class="body">
-                @foreach($page->attachments as $attachment)
-                    <div class="attachment icon-list">
-                        <a class="icon-list-item py-xs" href="{{ $attachment->getUrl() }}" @if($attachment->external) target="_blank" @endif>
-                            <span class="icon">@icon($attachment->external ? 'export' : 'file')</span>
-                            <span>{{ $attachment->name }}</span>
-                        </a>
-                    </div>
-                @endforeach
+                @include('attachments.list', ['attachments' => $page->attachments])
             </div>
         </div>
     @endif
@@ -56,7 +61,7 @@
                 <div class="sidebar-page-nav menu">
                     @foreach($pageNav as $navItem)
                         <li class="page-nav-item h{{ $navItem['level'] }}">
-                            <a href="{{ $navItem['link'] }}" class="limit-text block">{{ $navItem['text'] }}</a>
+                            <a href="{{ $navItem['link'] }}" class="text-limit-lines-1 block">{{ $navItem['text'] }}</a>
                             <div class="primary-background sidebar-page-nav-bullet"></div>
                         </li>
                     @endforeach
@@ -65,14 +70,14 @@
         </nav>
     @endif
 
-    @include('partials.book-tree', ['book' => $book, 'sidebarTree' => $sidebarTree])
+    @include('entities.book-tree', ['book' => $book, 'sidebarTree' => $sidebarTree])
 @stop
 
 @section('right')
     <div id="page-details" class="entity-details mb-xl">
         <h5>{{ trans('common.details') }}</h5>
         <div class="body text-small blended-links">
-            @include('partials.entity-meta', ['entity' => $page])
+            @include('entities.meta', ['entity' => $page])
 
             @if($book->restricted)
                 <div class="active-restriction">
@@ -113,7 +118,7 @@
     </div>
 
     <div class="actions mb-xl">
-        <h5>Actions</h5>
+        <h5>{{ trans('common.actions') }}</h5>
 
         <div class="icon-list text-primary">
 
@@ -157,8 +162,12 @@
 
             <hr class="primary-background"/>
 
-            {{--Export--}}
-            @include('partials.entity-export-menu', ['entity' => $page])
+            @if(signedInUser())
+                @include('entities.favourite-action', ['entity' => $page])
+            @endif
+            @if(userCan('content-export'))
+                @include('entities.export-menu', ['entity' => $page])
+            @endif
         </div>
 
     </div>

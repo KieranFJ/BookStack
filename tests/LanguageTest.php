@@ -1,17 +1,18 @@
-<?php namespace Tests;
+<?php
+
+namespace Tests;
 
 class LanguageTest extends TestCase
 {
-
     protected $langs;
 
     /**
      * LanguageTest constructor.
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
-        $this->langs = array_diff(scandir(resource_path('lang')), ['..', '.', 'check.php', 'format.php']);
+        $this->langs = array_diff(scandir(resource_path('lang')), ['..', '.']);
     }
 
     public function test_locales_config_key_set_properly()
@@ -19,7 +20,21 @@ class LanguageTest extends TestCase
         $configLocales = config('app.locales');
         sort($configLocales);
         sort($this->langs);
-        $this->assertTrue(implode(':', $this->langs) === implode(':', $configLocales), 'app.locales configuration variable matches found lang files');
+        $this->assertEquals(implode(':', $configLocales), implode(':', $this->langs), 'app.locales configuration variable does not match those found in lang files');
+    }
+
+    // Not part of standard phpunit test runs since we sometimes expect non-added langs.
+    public function do_test_locales_all_have_language_dropdown_entry()
+    {
+        $dropdownLocales = array_keys(trans('settings.language_select', [], 'en'));
+        sort($dropdownLocales);
+        sort($this->langs);
+        $diffs = array_diff($this->langs, $dropdownLocales);
+        if (count($diffs) > 0) {
+            $diffText = implode(',', $diffs);
+            $this->addWarning("Languages: {$diffText} found in files but not in language select dropdown.");
+        }
+        $this->assertTrue(true);
     }
 
     public function test_correct_language_if_not_logged_in()
@@ -47,6 +62,7 @@ class LanguageTest extends TestCase
         foreach ($this->langs as $lang) {
             foreach ($files as $file) {
                 $loadError = false;
+
                 try {
                     $translations = trans(str_replace('.php', '', $file), [], $lang);
                 } catch (\Exception $e) {
@@ -60,27 +76,9 @@ class LanguageTest extends TestCase
     public function test_rtl_config_set_if_lang_is_rtl()
     {
         $this->asEditor();
-        $this->assertFalse(config('app.rtl'), "App RTL config should be false by default");
+        $this->assertFalse(config('app.rtl'), 'App RTL config should be false by default');
         setting()->putUser($this->getEditor(), 'language', 'ar');
         $this->get('/');
-        $this->assertTrue(config('app.rtl'), "App RTL config should have been set to true by middleware");
+        $this->assertTrue(config('app.rtl'), 'App RTL config should have been set to true by middleware');
     }
-
-    public function test_de_informal_falls_base_to_de()
-    {
-        // Base de back value
-        $deBack = trans()->get('common.cancel', [], 'de', false);
-        $this->assertEquals('Abbrechen', $deBack);
-        // Ensure de_informal has no value set
-        $this->assertEquals('common.cancel', trans()->get('common.cancel', [], 'de_informal', false));
-        // Ensure standard trans falls back to de
-        $this->assertEquals($deBack, trans('common.cancel', [], 'de_informal'));
-        // Ensure de_informal gets its own values where set
-        $deEmailActionHelp = trans()->get('common.email_action_help', [], 'de', false);
-        $enEmailActionHelp = trans()->get('common.email_action_help', [], 'en', false);
-        $deInformalEmailActionHelp = trans()->get('common.email_action_help', [], 'de_informal', false);
-        $this->assertNotEquals($deEmailActionHelp, $deInformalEmailActionHelp);
-        $this->assertNotEquals($enEmailActionHelp, $deInformalEmailActionHelp);
-    }
-
 }

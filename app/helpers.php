@@ -2,17 +2,15 @@
 
 use BookStack\Auth\Permissions\PermissionService;
 use BookStack\Auth\User;
-use BookStack\Ownable;
+use BookStack\Model;
 use BookStack\Settings\SettingService;
 
 /**
  * Get the path to a versioned file.
  *
- * @param  string $file
- * @return string
  * @throws Exception
  */
-function versioned_asset($file = '') : string
+function versioned_asset(string $file = ''): string
 {
     static $version = null;
 
@@ -27,46 +25,40 @@ function versioned_asset($file = '') : string
     }
 
     $path = $file . '?version=' . urlencode($version) . $additional;
+
     return url($path);
 }
 
 /**
  * Helper method to get the current User.
  * Defaults to public 'Guest' user if not logged in.
- * @return User
  */
-function user() : User
+function user(): User
 {
     return auth()->user() ?: User::getDefault();
 }
 
 /**
  * Check if current user is a signed in user.
- * @return bool
  */
-function signedInUser() : bool
+function signedInUser(): bool
 {
     return auth()->user() && !auth()->user()->isDefault();
 }
 
 /**
  * Check if the current user has general access.
- * @return bool
  */
-function hasAppAccess() : bool
+function hasAppAccess(): bool
 {
     return !auth()->guest() || setting('app-public');
 }
 
 /**
- * Check if the current user has a permission.
- * If an ownable element is passed in the jointPermissions are checked against
- * that particular item.
- * @param string $permission
- * @param Ownable $ownable
- * @return bool
+ * Check if the current user has a permission. If an ownable element
+ * is passed in the jointPermissions are checked against that particular item.
  */
-function userCan(string $permission, Ownable $ownable = null) : bool
+function userCan(string $permission, Model $ownable = null): bool
 {
     if ($ownable === null) {
         return user() && user()->can($permission);
@@ -74,50 +66,51 @@ function userCan(string $permission, Ownable $ownable = null) : bool
 
     // Check permission on ownable item
     $permissionService = app(PermissionService::class);
+
     return $permissionService->checkOwnableUserAccess($ownable, $permission);
 }
 
 /**
  * Check if the current user has the given permission
  * on any item in the system.
- * @param string $permission
- * @param string|null $entityClass
- * @return bool
  */
-function userCanOnAny(string $permission, string $entityClass = null) : bool
+function userCanOnAny(string $permission, string $entityClass = null): bool
 {
     $permissionService = app(PermissionService::class);
+
     return $permissionService->checkUserHasPermissionOnAnything($permission, $entityClass);
 }
 
 /**
  * Helper to access system settings.
- * @param $key
- * @param bool $default
- * @return bool|string|SettingService
+ *
+ * @return mixed|SettingService
  */
-function setting($key = null, $default = false)
+function setting(string $key = null, $default = null)
 {
     $settingService = resolve(SettingService::class);
+
     if (is_null($key)) {
         return $settingService;
     }
+
     return $settingService->get($key, $default);
 }
 
 /**
  * Get a path to a theme resource.
- * @param string $path
- * @return string
+ * Returns null if a theme is not configured and
+ * therefore a full path is not available for use.
  */
-function theme_path($path = '') : string
+function theme_path(string $path = ''): ?string
 {
     $theme = config('view.theme');
+
     if (!$theme) {
-        return '';
+        return null;
     }
 
-    return base_path('themes/' . $theme .($path ? DIRECTORY_SEPARATOR.$path : $path));
+    return base_path('themes/' . $theme . ($path ? DIRECTORY_SEPARATOR . $path : $path));
 }
 
 /**
@@ -126,11 +119,8 @@ function theme_path($path = '') : string
  * to the 'resources/assets/icons' folder.
  *
  * Returns an empty string if icon file not found.
- * @param $name
- * @param array $attrs
- * @return mixed
  */
-function icon($name, $attrs = [])
+function icon(string $name, array $attrs = []): string
 {
     $attrs = array_merge([
         'class'     => 'svg-icon',
@@ -139,18 +129,20 @@ function icon($name, $attrs = [])
     ], $attrs);
     $attrString = ' ';
     foreach ($attrs as $attrName => $attr) {
-        $attrString .=  $attrName . '="' . $attr . '" ';
+        $attrString .= $attrName . '="' . $attr . '" ';
     }
 
-    $iconPath = resource_path('assets/icons/' . $name . '.svg');
+    $iconPath = resource_path('icons/' . $name . '.svg');
     $themeIconPath = theme_path('icons/' . $name . '.svg');
+
     if ($themeIconPath && file_exists($themeIconPath)) {
         $iconPath = $themeIconPath;
-    } else if (!file_exists($iconPath)) {
+    } elseif (!file_exists($iconPath)) {
         return '';
     }
 
     $fileContents = file_get_contents($iconPath);
+
     return  str_replace('<svg', '<svg' . $attrString, $fileContents);
 }
 
@@ -158,12 +150,8 @@ function icon($name, $attrs = [])
  * Generate a url with multiple parameters for sorting purposes.
  * Works out the logic to set the correct sorting direction
  * Discards empty parameters and allows overriding.
- * @param $path
- * @param array $data
- * @param array $overrideData
- * @return string
  */
-function sortUrl($path, $data, $overrideData = [])
+function sortUrl(string $path, array $data, array $overrideData = []): string
 {
     $queryStringSections = [];
     $queryData = array_merge($data, $overrideData);
@@ -171,7 +159,7 @@ function sortUrl($path, $data, $overrideData = [])
     // Change sorting direction is already sorted on current attribute
     if (isset($overrideData['sort']) && $overrideData['sort'] === $data['sort']) {
         $queryData['order'] = ($data['order'] === 'asc') ? 'desc' : 'asc';
-    } else {
+    } elseif (isset($overrideData['sort'])) {
         $queryData['order'] = 'asc';
     }
 

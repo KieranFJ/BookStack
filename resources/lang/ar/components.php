@@ -1,9 +1,10 @@
 <?php
+/**
+ * Text used in custom JavaScript driven components.
+ */
 return [
 
-    /**
-     * Image Manager
-     */
+    // Image Manager
     'image_select' => 'تحديد صورة',
     'image_all' => 'الكل',
     'image_all_title' => 'عرض جميع الصور',
@@ -14,7 +15,7 @@ return [
     'image_load_more' => 'المزيد',
     'image_image_name' => 'اسم الصورة',
     'image_delete_used' => 'هذه الصورة مستخدمة بالصفحات أدناه.',
-    'image_delete_confirm' => 'اضغط زر الحذف مرة أخرى لتأكيد حذف هذه الصورة.',
+    'image_delete_confirm_text' => 'هل أنت متأكد من أنك تريد حذف هذه الصورة؟',
     'image_select_image' => 'تحديد الصورة',
     'image_dropzone' => 'قم بإسقاط الصورة أو اضغط هنا للرفع',
     'images_deleted' => 'تم حذف الصور',
@@ -24,11 +25,10 @@ return [
     'image_delete_success' => 'تم حذف الصورة بنجاح',
     'image_upload_remove' => 'إزالة',
 
-    /**
-     * Code editor
-     */
+    // Code Editor
     'code_editor' => 'تعديل الشفرة',
     'code_language' => 'لغة الشفرة',
     'code_content' => 'محتويات الشفرة',
+    'code_session_history' => 'سجل الدورة',
     'code_save' => 'حفظ الشفرة',
 ];

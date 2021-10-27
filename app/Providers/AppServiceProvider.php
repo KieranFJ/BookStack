@@ -1,19 +1,29 @@
-<?php namespace BookStack\Providers;
+<?php
 
-use Blade;
-use BookStack\Entities\Book;
-use BookStack\Entities\Bookshelf;
+namespace BookStack\Providers;
+
+use BookStack\Auth\Access\LoginService;
+use BookStack\Auth\Access\SocialAuthService;
 use BookStack\Entities\BreadcrumbsViewComposer;
-use BookStack\Entities\Chapter;
-use BookStack\Entities\Page;
+use BookStack\Entities\Models\Book;
+use BookStack\Entities\Models\Bookshelf;
+use BookStack\Entities\Models\Chapter;
+use BookStack\Entities\Models\Page;
+use BookStack\Exceptions\WhoopsBookStackPrettyHandler;
 use BookStack\Settings\Setting;
 use BookStack\Settings\SettingService;
+use BookStack\Util\CspService;
+use GuzzleHttp\Client;
+use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
-use Schema;
-use URL;
-use Validator;
+use Laravel\Socialite\Contracts\Factory as SocialiteFactory;
+use Psr\Http\Client\ClientInterface as HttpClientInterface;
+use Whoops\Handler\HandlerInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,30 +35,16 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         // Set root URL
-        URL::forceRootUrl(config('app.url'));
-
-        // Custom validation methods
-        Validator::extend('image_extension', function ($attribute, $value, $parameters, $validator) {
-            $validImageExtensions = ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'tiff', 'webp'];
-            return in_array(strtolower($value->getClientOriginalExtension()), $validImageExtensions);
-        });
-
-        Validator::extend('no_double_extension', function ($attribute, $value, $parameters, $validator) {
-            $uploadName = $value->getClientOriginalName();
-            return substr_count($uploadName, '.') < 2;
-        });
+        $appUrl = config('app.url');
+        if ($appUrl) {
+            $isHttps = (strpos($appUrl, 'https://') === 0);
+            URL::forceRootUrl($appUrl);
+            URL::forceScheme($isHttps ? 'https' : 'http');
+        }
 
         // Custom blade view directives
         Blade::directive('icon', function ($expression) {
             return "<?php echo icon($expression); ?>";
-        });
-
-        Blade::directive('exposeTranslations', function($expression) {
-            return "<?php \$__env->startPush('translations'); ?>" .
-                "<?php foreach({$expression} as \$key): ?>" .
-                '<meta name="translation" key="<?php echo e($key); ?>" value="<?php echo e(trans($key)); ?>">' . "\n" .
-                "<?php endforeach; ?>" .
-                '<?php $__env->stopPush(); ?>';
         });
 
         // Allow longer string lengths after upgrade to utf8mb4
@@ -57,13 +53,13 @@ class AppServiceProvider extends ServiceProvider
         // Set morph-map due to namespace changes
         Relation::morphMap([
             'BookStack\\Bookshelf' => Bookshelf::class,
-            'BookStack\\Book' => Book::class,
-            'BookStack\\Chapter' => Chapter::class,
-            'BookStack\\Page' => Page::class,
+            'BookStack\\Book'      => Book::class,
+            'BookStack\\Chapter'   => Chapter::class,
+            'BookStack\\Page'      => Page::class,
         ]);
 
         // View Composers
-        View::composer('partials.breadcrumbs', BreadcrumbsViewComposer::class);
+        View::composer('entities.breadcrumbs', BreadcrumbsViewComposer::class);
     }
 
     /**
@@ -73,8 +69,26 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->app->bind(HandlerInterface::class, function ($app) {
+            return $app->make(WhoopsBookStackPrettyHandler::class);
+        });
+
         $this->app->singleton(SettingService::class, function ($app) {
-            return new SettingService($app->make(Setting::class), $app->make('Illuminate\Contracts\Cache\Repository'));
+            return new SettingService($app->make(Setting::class), $app->make(Repository::class));
+        });
+
+        $this->app->singleton(SocialAuthService::class, function ($app) {
+            return new SocialAuthService($app->make(SocialiteFactory::class), $app->make(LoginService::class));
+        });
+
+        $this->app->singleton(CspService::class, function ($app) {
+            return new CspService();
+        });
+
+        $this->app->bind(HttpClientInterface::class, function ($app) {
+            return new Client([
+                'timeout' => 3,
+            ]);
         });
     }
 }

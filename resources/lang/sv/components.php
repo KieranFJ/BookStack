@@ -1,9 +1,10 @@
 <?php
+/**
+ * Text used in custom JavaScript driven components.
+ */
 return [
 
-    /**
-     * Image Manager
-     */
+    // Image Manager
     'image_select' => 'Val av bild',
     'image_all' => 'Alla',
     'image_all_title' => 'Visa alla bilder',
@@ -14,7 +15,7 @@ return [
     'image_load_more' => 'Ladda fler',
     'image_image_name' => 'Bildnamn',
     'image_delete_used' => 'Den här bilden används på nedanstående sidor.',
-    'image_delete_confirm' => 'Klicka på "ta bort" en gång till för att bekräfta att du vill ta bort bilden.',
+    'image_delete_confirm_text' => 'Är du säker på att du vill radera denna bild?',
     'image_select_image' => 'Välj bild',
     'image_dropzone' => 'Släpp bilder här eller klicka för att ladda upp',
     'images_deleted' => 'Bilder borttagna',
@@ -24,11 +25,10 @@ return [
     'image_delete_success' => 'Bilden har tagits bort',
     'image_upload_remove' => 'Radera',
 
-    /**
-     * Code editor
-     */
+    // Code Editor
     'code_editor' => 'Redigera kod',
     'code_language' => 'Språk',
     'code_content' => 'Kod',
+    'code_session_history' => 'Sessionshistorik',
     'code_save' => 'Spara',
 ];

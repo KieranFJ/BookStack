@@ -1,35 +1,47 @@
-<?php namespace BookStack\Http\Controllers;
+<?php
+
+namespace BookStack\Http\Controllers;
 
 use Activity;
-use BookStack\Entities\Repos\EntityRepo;
-use Illuminate\Http\Response;
-use Views;
+use BookStack\Entities\Models\Book;
+use BookStack\Entities\Models\Page;
+use BookStack\Entities\Queries\RecentlyViewed;
+use BookStack\Entities\Queries\TopFavourites;
+use BookStack\Entities\Repos\BookRepo;
+use BookStack\Entities\Repos\BookshelfRepo;
+use BookStack\Entities\Tools\PageContent;
 
 class HomeController extends Controller
 {
-    protected $entityRepo;
-
-    /**
-     * HomeController constructor.
-     * @param EntityRepo $entityRepo
-     */
-    public function __construct(EntityRepo $entityRepo)
-    {
-        $this->entityRepo = $entityRepo;
-        parent::__construct();
-    }
-
     /**
      * Display the homepage.
-     * @return Response
      */
     public function index()
     {
         $activity = Activity::latest(10);
-        $draftPages = $this->signedIn ? $this->entityRepo->getUserDraftPages(6) : [];
+        $draftPages = [];
+
+        if ($this->isSignedIn()) {
+            $draftPages = Page::visible()
+                ->where('draft', '=', true)
+                ->where('created_by', '=', user()->id)
+                ->orderBy('updated_at', 'desc')
+                ->with('book')
+                ->take(6)
+                ->get();
+        }
+
         $recentFactor = count($draftPages) > 0 ? 0.5 : 1;
-        $recents = $this->signedIn ? Views::getUserRecentlyViewed(12*$recentFactor, 0) : $this->entityRepo->getRecentlyCreated('book', 12*$recentFactor);
-        $recentlyUpdatedPages = $this->entityRepo->getRecentlyUpdated('page', 12);
+        $recents = $this->isSignedIn() ?
+            (new RecentlyViewed())->run(12 * $recentFactor, 1)
+            : Book::visible()->orderBy('created_at', 'desc')->take(12 * $recentFactor)->get();
+        $favourites = (new TopFavourites())->run(6);
+        $recentlyUpdatedPages = Page::visible()->with('book')
+            ->where('draft', false)
+            ->orderBy('updated_at', 'desc')
+            ->take($favourites->count() > 0 ? 6 : 12)
+            ->select(Page::$listAttributes)
+            ->get();
 
         $homepageOptions = ['default', 'books', 'bookshelves', 'page'];
         $homepageOption = setting('app-homepage-type', 'default');
@@ -38,88 +50,92 @@ class HomeController extends Controller
         }
 
         $commonData = [
-            'activity' => $activity,
-            'recents' => $recents,
+            'activity'             => $activity,
+            'recents'              => $recents,
             'recentlyUpdatedPages' => $recentlyUpdatedPages,
-            'draftPages' => $draftPages,
+            'draftPages'           => $draftPages,
+            'favourites'           => $favourites,
         ];
 
         // Add required list ordering & sorting for books & shelves views.
         if ($homepageOption === 'bookshelves' || $homepageOption === 'books') {
             $key = $homepageOption;
-            $view = setting()->getUser($this->currentUser, $key . '_view_type', config('app.views.' . $key));
-            $sort = setting()->getUser($this->currentUser, $key . '_sort', 'name');
-            $order = setting()->getUser($this->currentUser, $key . '_sort_order', 'asc');
+            $view = setting()->getForCurrentUser($key . '_view_type');
+            $sort = setting()->getForCurrentUser($key . '_sort', 'name');
+            $order = setting()->getForCurrentUser($key . '_sort_order', 'asc');
 
             $sortOptions = [
-                'name' => trans('common.sort_name'),
+                'name'       => trans('common.sort_name'),
                 'created_at' => trans('common.sort_created_at'),
                 'updated_at' => trans('common.sort_updated_at'),
             ];
 
             $commonData = array_merge($commonData, [
-                'view' => $view,
-                'sort' => $sort,
-                'order' => $order,
+                'view'        => $view,
+                'sort'        => $sort,
+                'order'       => $order,
                 'sortOptions' => $sortOptions,
             ]);
         }
 
         if ($homepageOption === 'bookshelves') {
-            $shelves = $this->entityRepo->getAllPaginated('bookshelf', 18, $commonData['sort'], $commonData['order']);
-            foreach ($shelves as $shelf) {
-                $shelf->books = $this->entityRepo->getBookshelfChildren($shelf);
-            }
+            $shelves = app(BookshelfRepo::class)->getAllPaginated(18, $commonData['sort'], $commonData['order']);
             $data = array_merge($commonData, ['shelves' => $shelves]);
-            return view('common.home-shelves', $data);
+
+            return view('home.shelves', $data);
         }
 
         if ($homepageOption === 'books') {
-            $books = $this->entityRepo->getAllPaginated('book', 18, $commonData['sort'], $commonData['order']);
+            $bookRepo = app(BookRepo::class);
+            $books = $bookRepo->getAllPaginated(18, $commonData['sort'], $commonData['order']);
             $data = array_merge($commonData, ['books' => $books]);
-            return view('common.home-book', $data);
+
+            return view('home.books', $data);
         }
 
         if ($homepageOption === 'page') {
             $homepageSetting = setting('app-homepage', '0:');
             $id = intval(explode(':', $homepageSetting)[0]);
-            $customHomepage = $this->entityRepo->getById('page', $id, false, true);
-            $this->entityRepo->renderPage($customHomepage, true);
-            return view('common.home-custom', array_merge($commonData, ['customHomepage' => $customHomepage]));
+            /** @var Page $customHomepage */
+            $customHomepage = Page::query()->where('draft', '=', false)->findOrFail($id);
+            $pageContent = new PageContent($customHomepage);
+            $customHomepage->html = $pageContent->render(false);
+
+            return view('home.specific-page', array_merge($commonData, ['customHomepage' => $customHomepage]));
         }
 
-        return view('common.home', $commonData);
+        return view('home.default', $commonData);
     }
 
     /**
      * Get custom head HTML, Used in ajax calls to show in editor.
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function customHeadContent()
     {
-        return view('partials.custom-head-content');
+        return view('common.custom-head');
     }
 
     /**
-     * Show the view for /robots.txt
-     * @return $this
+     * Show the view for /robots.txt.
      */
-    public function getRobots()
+    public function robots()
     {
         $sitePublic = setting('app-public', false);
         $allowRobots = config('app.allow_robots');
+
         if ($allowRobots === null) {
             $allowRobots = $sitePublic;
         }
+
         return response()
-            ->view('common.robots', ['allowRobots' => $allowRobots])
+            ->view('misc.robots', ['allowRobots' => $allowRobots])
             ->header('Content-Type', 'text/plain');
     }
 
     /**
      * Show the route for 404 responses.
      */
-    public function getNotFound()
+    public function notFound()
     {
         return response()->view('errors.404', [], 404);
     }

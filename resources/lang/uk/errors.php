@@ -1,6 +1,6 @@
 <?php
 /**
- * Text shown in error messaging. / Текст відображається в повідомленнях про помилку.
+ * Text shown in error messaging.
  */
 return [
 
@@ -13,10 +13,20 @@ return [
     'email_already_confirmed' => 'Електронна пошта вже підтверджена, спробуйте увійти.',
     'email_confirmation_invalid' => 'Цей токен підтвердження недійсний або вже був використаний, будь ласка, спробуйте знову зареєструватися.',
     'email_confirmation_expired' => 'Термін дії токена підтвердження минув, новий електронний лист підтвердження був відправлений.',
+    'email_confirmation_awaiting' => 'Потрібно підтвердити адресу електронної пошти для облікового запису, який використовується',
     'ldap_fail_anonymous' => 'LDAP-доступ невдалий, з використання анонімного зв\'язку',
     'ldap_fail_authed' => 'LDAP-доступ невдалий, використовуючи задані параметри dn та password',
     'ldap_extension_not_installed' => 'Розширення PHP LDAP не встановлено',
     'ldap_cannot_connect' => 'Неможливо підключитися до ldap-сервера, Помилка з\'єднання',
+    'saml_already_logged_in' => 'Вже увійшли',
+    'saml_user_not_registered' => 'Користувач «:name» не зареєстрований, а автоматична реєстрація вимкнена',
+    'saml_no_email_address' => 'Не вдалося знайти електронну адресу для цього користувача у даних, наданих зовнішньою системою аутентифікації',
+    'saml_invalid_response_id' => 'Запит із зовнішньої системи аутентифікації не розпізнається процесом, розпочатим цим додатком. Повернення назад після входу могла спричинити цю проблему.',
+    'saml_fail_authed' => 'Вхід із використанням «:system» не вдався, система не здійснила успішну авторизацію',
+    'oidc_already_logged_in' => 'Already logged in',
+    'oidc_user_not_registered' => 'The user :name is not registered and automatic registration is disabled',
+    'oidc_no_email_address' => 'Could not find an email address, for this user, in the data provided by the external authentication system',
+    'oidc_fail_authed' => 'Login using :system failed, system did not provide successful authorization',
     'social_no_action_defined' => 'Жодних дій не визначено',
     'social_login_bad_response' => "Помилка, отримана під час входу з :socialAccount помилка : \n:error",
     'social_account_in_use' => 'Цей :socialAccount обліковий запис вже використовується, спробуйте ввійти з параметрами :socialAccount.',
@@ -27,6 +37,7 @@ return [
     'social_account_register_instructions' => 'Якщо у вас ще немає облікового запису, ви можете зареєструвати обліковий запис за допомогою параметра :socialAccount.',
     'social_driver_not_found' => 'Драйвер для СоціальноїМережі не знайдено',
     'social_driver_not_configured' => 'Ваші соціальні настройки :socialAccount не правильно налаштовані.',
+    'invite_token_expired' => 'Термін дії цього запрошення закінчився. Замість цього ви можете спробувати скинути пароль свого облікового запису.',
 
     // System
     'path_not_writable' => 'Не вдається завантажити шлях до файлу :filePath. Переконайтеся, що він доступний для запису на сервер.',
@@ -39,7 +50,6 @@ return [
     'file_upload_timeout' => 'Тайм-аут при завантаженні файлу',
 
     // Attachments
-    'attachment_page_mismatch' => 'Невідповідність сторінки при оновленні вкладень',
     'attachment_not_found' => 'Вкладення не знайдено',
 
     // Pages
@@ -76,9 +86,24 @@ return [
     // Error pages
     '404_page_not_found' => 'Сторінку не знайдено',
     'sorry_page_not_found' => 'Вибачте, сторінку, яку ви шукали, не знайдено.',
+    'sorry_page_not_found_permission_warning' => 'Якщо ви очікували що ця сторінки існує – можливо у вас немає дозволу на її перегляд.',
+    'image_not_found' => 'Image Not Found',
+    'image_not_found_subtitle' => 'Sorry, The image file you were looking for could not be found.',
+    'image_not_found_details' => 'If you expected this image to exist it might have been deleted.',
     'return_home' => 'Повернутися на головну',
     'error_occurred' => 'Виникла помилка',
     'app_down' => ':appName зараз недоступний',
     'back_soon' => 'Він повернеться найближчим часом.',
+
+    // API errors
+    'api_no_authorization_found' => 'У запиті не знайдено токен авторизації',
+    'api_bad_authorization_format' => 'У запиті знайдено токен авторизації, але формат недійсний',
+    'api_user_token_not_found' => 'Не знайдено відповідного API-токена для наданого токена авторизації',
+    'api_incorrect_token_secret' => 'Секрет, наданий для даного використовуваного токена API є неправильним',
+    'api_user_no_api_permission' => 'Власник використовуваного токена API не має дозволу здійснювати виклики API',
+    'api_user_token_expired' => 'Термін дії токена авторизації закінчився',
+
+    // Settings & Maintenance
+    'maintenance_test_email_failure' => 'Помилка під час надсилання тестового електронного листа:',
 
 ];

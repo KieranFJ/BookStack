@@ -1,24 +1,25 @@
-<?php namespace BookStack\Uploads;
+<?php
+
+namespace BookStack\Uploads;
 
 use BookStack\Auth\Permissions\PermissionService;
-use BookStack\Entities\Page;
+use BookStack\Entities\Models\Page;
+use BookStack\Exceptions\ImageUploadException;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ImageRepo
 {
-
     protected $image;
     protected $imageService;
     protected $restrictionService;
     protected $page;
 
+    protected static $supportedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
     /**
      * ImageRepo constructor.
-     * @param Image $image
-     * @param ImageService $imageService
-     * @param \BookStack\Auth\Permissions\PermissionService $permissionService
-     * @param \BookStack\Entities\Page $page
      */
     public function __construct(
         Image $image,
@@ -32,13 +33,18 @@ class ImageRepo
         $this->page = $page;
     }
 
+    /**
+     * Check if the given image extension is supported by BookStack.
+     */
+    public function imageExtensionSupported(string $extension): bool
+    {
+        return in_array(trim($extension, ". \t\n\r\0\x0B"), static::$supportedExtensions);
+    }
 
     /**
      * Get an image with the given id.
-     * @param $id
-     * @return Image
      */
-    public function getById($id)
+    public function getById($id): Image
     {
         return $this->image->findOrFail($id);
     }
@@ -46,13 +52,8 @@ class ImageRepo
     /**
      * Execute a paginated query, returning in a standard format.
      * Also runs the query through the restriction system.
-     * @param $query
-     * @param int $page
-     * @param int $pageSize
-     * @param bool $filterOnPage
-     * @return array
      */
-    private function returnPaginated($query, $page = 1, $pageSize = 24)
+    private function returnPaginated($query, $page = 1, $pageSize = 24): array
     {
         $images = $query->orderBy('created_at', 'desc')->skip($pageSize * ($page - 1))->take($pageSize + 1)->get();
         $hasMore = count($images) > $pageSize;
@@ -63,21 +64,14 @@ class ImageRepo
         });
 
         return [
-            'images'  => $returnImages,
-            'has_more' => $hasMore
+            'images'   => $returnImages,
+            'has_more' => $hasMore,
         ];
     }
 
     /**
      * Fetch a list of images in a paginated format, filtered by image type.
      * Can be filtered by uploaded to and also by name.
-     * @param string $type
-     * @param int $page
-     * @param int $pageSize
-     * @param int $uploadedTo
-     * @param string|null $search
-     * @param callable|null $whereClause
-     * @return array
      */
     public function getPaginatedByType(
         string $type,
@@ -86,7 +80,7 @@ class ImageRepo
         int $uploadedTo = null,
         string $search = null,
         callable $whereClause = null
-    ) {
+    ): array {
         $imageQuery = $this->image->newQuery()->where('type', '=', strtolower($type));
 
         if ($uploadedTo !== null) {
@@ -98,7 +92,7 @@ class ImageRepo
         }
 
         // Filter by page access
-        $imageQuery = $this->restrictionService->filterRelatedEntity('page', $imageQuery, 'images', 'uploaded_to');
+        $imageQuery = $this->restrictionService->filterRelatedEntity(Page::class, $imageQuery, 'images', 'uploaded_to');
 
         if ($whereClause !== null) {
             $imageQuery = $imageQuery->where($whereClause);
@@ -109,13 +103,6 @@ class ImageRepo
 
     /**
      * Get paginated gallery images within a specific page or book.
-     * @param string $type
-     * @param string $filterType
-     * @param int $page
-     * @param int $pageSize
-     * @param int|null $uploadedTo
-     * @param string|null $search
-     * @return array
      */
     public function getEntityFiltered(
         string $type,
@@ -124,7 +111,7 @@ class ImageRepo
         int $pageSize = 24,
         int $uploadedTo = null,
         string $search = null
-    ) {
+    ): array {
         $contextPage = $this->page->findOrFail($uploadedTo);
         $parentFilter = null;
 
@@ -133,7 +120,7 @@ class ImageRepo
                 if ($filterType === 'page') {
                     $query->where('uploaded_to', '=', $contextPage->id);
                 } elseif ($filterType === 'book') {
-                    $validPageIds = $contextPage->book->pages()->get(['id'])->pluck('id')->toArray();
+                    $validPageIds = $contextPage->book->pages()->visible()->get(['id'])->pluck('id')->toArray();
                     $query->whereIn('uploaded_to', $validPageIds);
                 }
             };
@@ -144,72 +131,75 @@ class ImageRepo
 
     /**
      * Save a new image into storage and return the new image.
-     * @param UploadedFile $uploadFile
-     * @param string $type
-     * @param int $uploadedTo
-     * @param int|null $resizeWidth
-     * @param int|null $resizeHeight
-     * @param bool $keepRatio
-     * @return Image
-     * @throws \BookStack\Exceptions\ImageUploadException
+     *
+     * @throws ImageUploadException
      */
-    public function saveNew(UploadedFile $uploadFile, $type, $uploadedTo = 0, int $resizeWidth = null, int $resizeHeight = null, bool $keepRatio = true)
+    public function saveNew(UploadedFile $uploadFile, string $type, int $uploadedTo = 0, int $resizeWidth = null, int $resizeHeight = null, bool $keepRatio = true): Image
     {
         $image = $this->imageService->saveNewFromUpload($uploadFile, $type, $uploadedTo, $resizeWidth, $resizeHeight, $keepRatio);
         $this->loadThumbs($image);
+
         return $image;
     }
 
     /**
-     * Save a drawing the the database;
-     * @param string $base64Uri
-     * @param int $uploadedTo
-     * @return Image
-     * @throws \BookStack\Exceptions\ImageUploadException
+     * Save a new image from an existing image data string.
+     *
+     * @throws ImageUploadException
      */
-    public function saveDrawing(string $base64Uri, int $uploadedTo)
+    public function saveNewFromData(string $imageName, string $imageData, string $type, int $uploadedTo = 0)
     {
-        $name = 'Drawing-' . user()->getShortName(40) . '-' . strval(time()) . '.png';
-        $image = $this->imageService->saveNewFromBase64Uri($base64Uri, $name, 'drawio', $uploadedTo);
+        $image = $this->imageService->saveNew($imageName, $imageData, $type, $uploadedTo);
+        $this->loadThumbs($image);
+
         return $image;
     }
 
+    /**
+     * Save a drawing the the database.
+     *
+     * @throws ImageUploadException
+     */
+    public function saveDrawing(string $base64Uri, int $uploadedTo): Image
+    {
+        $name = 'Drawing-' . strval(user()->id) . '-' . strval(time()) . '.png';
+
+        return $this->imageService->saveNewFromBase64Uri($base64Uri, $name, 'drawio', $uploadedTo);
+    }
 
     /**
      * Update the details of an image via an array of properties.
-     * @param Image $image
-     * @param array $updateDetails
-     * @return Image
-     * @throws \BookStack\Exceptions\ImageUploadException
-     * @throws \Exception
+     *
+     * @throws ImageUploadException
+     * @throws Exception
      */
-    public function updateImageDetails(Image $image, $updateDetails)
+    public function updateImageDetails(Image $image, $updateDetails): Image
     {
         $image->fill($updateDetails);
         $image->save();
         $this->loadThumbs($image);
+
         return $image;
     }
 
-
     /**
      * Destroys an Image object along with its revisions, files and thumbnails.
-     * @param Image $image
-     * @return bool
-     * @throws \Exception
+     *
+     * @throws Exception
      */
-    public function destroyImage(Image $image = null)
+    public function destroyImage(Image $image = null): bool
     {
         if ($image) {
             $this->imageService->destroy($image);
         }
+
         return true;
     }
 
     /**
      * Destroy all images of a certain type.
-     * @param string $imageType
-     * @throws \Exception
+     *
+     * @throws Exception
      */
     public function destroyByType(string $imageType)
     {
@@ -219,18 +209,16 @@ class ImageRepo
         }
     }
 
-
     /**
      * Load thumbnails onto an image object.
-     * @param Image $image
-     * @throws \BookStack\Exceptions\ImageUploadException
-     * @throws \Exception
+     *
+     * @throws Exception
      */
-    protected function loadThumbs(Image $image)
+    public function loadThumbs(Image $image)
     {
         $image->thumbs = [
             'gallery' => $this->getThumbnail($image, 150, 150, false),
-            'display' => $this->getThumbnail($image, 1680, null, true)
+            'display' => $this->getThumbnail($image, 1680, null, true),
         ];
     }
 
@@ -238,43 +226,43 @@ class ImageRepo
      * Get the thumbnail for an image.
      * If $keepRatio is true only the width will be used.
      * Checks the cache then storage to avoid creating / accessing the filesystem on every check.
-     * @param Image $image
-     * @param int $width
-     * @param int $height
-     * @param bool $keepRatio
-     * @return string
-     * @throws \BookStack\Exceptions\ImageUploadException
-     * @throws \Exception
+     *
+     * @throws Exception
      */
-    protected function getThumbnail(Image $image, $width = 220, $height = 220, $keepRatio = false)
+    protected function getThumbnail(Image $image, ?int $width = 220, ?int $height = 220, bool $keepRatio = false): ?string
     {
         try {
             return $this->imageService->getThumbnail($image, $width, $height, $keepRatio);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             return null;
         }
     }
 
     /**
      * Get the raw image data from an Image.
-     * @param Image $image
-     * @return null|string
      */
-    public function getImageData(Image $image)
+    public function getImageData(Image $image): ?string
     {
         try {
             return $this->imageService->getImageData($image);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             return null;
         }
     }
 
     /**
-     * Get the validation rules for image files.
-     * @return string
+     * Get the user visible pages using the given image.
      */
-    public function getImageValidationRules()
+    public function getPagesUsingImage(Image $image): array
     {
-        return 'image_extension|no_double_extension|mimes:jpeg,png,gif,bmp,webp,tiff';
+        $pages = Page::visible()
+            ->where('html', 'like', '%' . $image->url . '%')
+            ->get(['id', 'name', 'slug', 'book_id']);
+
+        foreach ($pages as $page) {
+            $page->url = $page->getUrl();
+        }
+
+        return $pages->all();
     }
 }

@@ -2,41 +2,39 @@
 
 namespace BookStack\Http\Controllers\Auth;
 
+use BookStack\Auth\Access\LoginService;
 use BookStack\Auth\Access\UserInviteService;
 use BookStack\Auth\UserRepo;
 use BookStack\Exceptions\UserTokenExpiredException;
 use BookStack\Exceptions\UserTokenNotFoundException;
 use BookStack\Http\Controllers\Controller;
 use Exception;
-use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
-use Illuminate\View\View;
 
 class UserInviteController extends Controller
 {
     protected $inviteService;
+    protected $loginService;
     protected $userRepo;
 
     /**
      * Create a new controller instance.
-     *
-     * @param UserInviteService $inviteService
-     * @param UserRepo $userRepo
      */
-    public function __construct(UserInviteService $inviteService, UserRepo $userRepo)
+    public function __construct(UserInviteService $inviteService, LoginService $loginService, UserRepo $userRepo)
     {
-        $this->inviteService = $inviteService;
-        $this->userRepo = $userRepo;
         $this->middleware('guest');
-        parent::__construct();
+        $this->middleware('guard:standard');
+
+        $this->inviteService = $inviteService;
+        $this->loginService = $loginService;
+        $this->userRepo = $userRepo;
     }
 
     /**
      * Show the page for the user to set the password for their account.
-     * @param string $token
-     * @return Factory|View|RedirectResponse
+     *
      * @throws Exception
      */
     public function showSetPassword(string $token)
@@ -54,15 +52,13 @@ class UserInviteController extends Controller
 
     /**
      * Sets the password for an invited user and then grants them access.
-     * @param string $token
-     * @param Request $request
-     * @return RedirectResponse|Redirector
+     *
      * @throws Exception
      */
-    public function setPassword(string $token, Request $request)
+    public function setPassword(Request $request, string $token)
     {
         $this->validate($request, [
-            'password' => 'required|min:6'
+            'password' => 'required|min:8',
         ]);
 
         try {
@@ -76,18 +72,19 @@ class UserInviteController extends Controller
         $user->email_confirmed = true;
         $user->save();
 
-        auth()->login($user);
-        session()->flash('success', trans('auth.user_invite_success', ['appName' => setting('app-name')]));
         $this->inviteService->deleteByUser($user);
+        $this->showSuccessNotification(trans('auth.user_invite_success', ['appName' => setting('app-name')]));
+        $this->loginService->login($user, auth()->getDefaultDriver());
 
         return redirect('/');
     }
 
     /**
      * Check and validate the exception thrown when checking an invite token.
-     * @param Exception $exception
-     * @return RedirectResponse|Redirector
+     *
      * @throws Exception
+     *
+     * @return RedirectResponse|Redirector
      */
     protected function handleTokenException(Exception $exception)
     {
@@ -96,11 +93,11 @@ class UserInviteController extends Controller
         }
 
         if ($exception instanceof UserTokenExpiredException) {
-            session()->flash('error', trans('errors.invite_token_expired'));
+            $this->showErrorNotification(trans('errors.invite_token_expired'));
+
             return redirect('/password/email');
         }
 
         throw $exception;
     }
-
 }

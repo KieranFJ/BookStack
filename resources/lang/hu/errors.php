@@ -13,10 +13,20 @@ return [
     'email_already_confirmed' => 'Az email cím már meg van erősítve, meg lehet próbálni a bejelentkezést.',
     'email_confirmation_invalid' => 'A megerősítő vezérjel nem érvényes vagy használva volt. Meg kell próbálni újraregisztrálni.',
     'email_confirmation_expired' => 'A megerősítő vezérjel lejárt. Egy új megerősítő email lett elküldve.',
+    'email_confirmation_awaiting' => 'A használatban lévő fiók email címét meg kell erősíteni',
     'ldap_fail_anonymous' => 'Nem sikerült az LDAP elérése névtelen csatlakozással',
     'ldap_fail_authed' => 'Az LDAP hozzáférés nem sikerült a megadott DN és jelszó beállításokkal',
     'ldap_extension_not_installed' => 'LDAP PHP kiterjesztés nincs telepítve',
     'ldap_cannot_connect' => 'Nem lehet kapcsolódni az LDAP kiszolgálóhoz, a kezdeti kapcsolatfelvétel nem sikerült',
+    'saml_already_logged_in' => 'Már bejelentkezett',
+    'saml_user_not_registered' => ':name felhasználó nincs regisztrálva és az automatikus regisztráció le van tiltva',
+    'saml_no_email_address' => 'Ehhez a felhasználóhoz nem található email cím a külső hitelesítő rendszer által átadott adatokban',
+    'saml_invalid_response_id' => 'A külső hitelesítő rendszerből érkező kérést nem ismerte fel az alkalmazás által indított folyamat. Bejelentkezés után az előző oldalra történő visszalépés okozhatja ezt a hibát.',
+    'saml_fail_authed' => 'Bejelentkezés :system használatával sikertelen, a rendszer nem biztosított sikeres hitelesítést',
+    'oidc_already_logged_in' => 'Already logged in',
+    'oidc_user_not_registered' => 'The user :name is not registered and automatic registration is disabled',
+    'oidc_no_email_address' => 'Could not find an email address, for this user, in the data provided by the external authentication system',
+    'oidc_fail_authed' => 'Login using :system failed, system did not provide successful authorization',
     'social_no_action_defined' => 'Nincs művelet meghatározva',
     'social_login_bad_response' => "Hiba történt :socialAccount bejelentkezés közben:\n:error",
     'social_account_in_use' => ':socialAccount fiók már használatban van. :socialAccount opción keresztül érdemes megpróbálni a bejelentkezést.',
@@ -27,6 +37,7 @@ return [
     'social_account_register_instructions' => ':socialAccount beállítása használatával is lehet fiókot regisztrálni, ha még nem volt fiók létrehozva.',
     'social_driver_not_found' => 'Közösségi meghajtó nem található',
     'social_driver_not_configured' => ':socialAccount közösségi beállítások nem megfelelőek.',
+    'invite_token_expired' => 'Ez a meghívó hivatkozás lejárt. Helyette meg lehet próbálni új jelszót megadni a fiókhoz.',
 
     // System
     'path_not_writable' => ':filePath elérési út nem tölthető fel. Ellenőrizni kell, hogy az útvonal a kiszolgáló számára írható.',
@@ -39,7 +50,6 @@ return [
     'file_upload_timeout' => 'A fáj feltöltése időtúllépést okozott.',
 
     // Attachments
-    'attachment_page_mismatch' => 'Oldal eltárás csatolmány frissítése közben',
     'attachment_not_found' => 'Csatolmány nem található',
 
     // Pages
@@ -76,9 +86,24 @@ return [
     // Error pages
     '404_page_not_found' => 'Oldal nem található',
     'sorry_page_not_found' => 'Sajnáljuk, a keresett oldal nem található.',
+    'sorry_page_not_found_permission_warning' => 'If you expected this page to exist, you might not have permission to view it.',
+    'image_not_found' => 'Image Not Found',
+    'image_not_found_subtitle' => 'Sorry, The image file you were looking for could not be found.',
+    'image_not_found_details' => 'If you expected this image to exist it might have been deleted.',
     'return_home' => 'Vissza a kezdőlapra',
     'error_occurred' => 'Hiba örtént',
     'app_down' => ':appName jelenleg nem üzemel',
     'back_soon' => 'Hamarosan újra elérhető lesz.',
+
+    // API errors
+    'api_no_authorization_found' => 'A kérésben nem található hitelesítési vezérjel',
+    'api_bad_authorization_format' => 'A kérésben hitelesítési vezérjel található de a formátuma érvénytelennek tűnik',
+    'api_user_token_not_found' => 'A megadott hitelesítési vezérjelhez nem található egyező API vezérjel',
+    'api_incorrect_token_secret' => 'The secret provided for the given used API token is incorrect',
+    'api_user_no_api_permission' => 'A használt API vezérjel tulajdonosának nincs jogosultsága API hívások végrehajtásához',
+    'api_user_token_expired' => 'A használt hitelesítési vezérjel lejárt',
+
+    // Settings & Maintenance
+    'maintenance_test_email_failure' => 'Hiba történt egy teszt email küldésekor:',
 
 ];

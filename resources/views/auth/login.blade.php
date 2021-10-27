@@ -1,4 +1,4 @@
-@extends('simple-layout')
+@extends('layouts.simple')
 
 @section('content')
 
@@ -7,46 +7,23 @@
         <div class="my-l">&nbsp;</div>
 
         <div class="card content-wrap auto-height">
-            <h1 class="list-heading">{{ title_case(trans('auth.log_in')) }}</h1>
+            <h1 class="list-heading">{{ Str::title(trans('auth.log_in')) }}</h1>
 
-            <form action="{{ url('/login') }}" method="POST" id="login-form" class="mt-l">
-                {!! csrf_field() !!}
-
-                <div class="stretch-inputs">
-                    @include('auth.forms.login.' . $authMethod)
-                </div>
-
-                <div class="grid half collapse-xs gap-xl v-center">
-                    <div class="text-left ml-xxs">
-                        @include('components.custom-checkbox', [
-                            'name' => 'remember',
-                            'checked' => false,
-                            'value' => 'on',
-                            'tabindex' => 1,
-                            'label' => trans('auth.remember_me'),
-                        ])
-                    </div>
-
-                    <div class="text-right">
-                        <button class="button" tabindex="1">{{ title_case(trans('auth.log_in')) }}</button>
-                    </div>
-                </div>
-
-            </form>
+            @include('auth.parts.login-form-' . $authMethod)
 
             @if(count($socialDrivers) > 0)
                 <hr class="my-l">
                 @foreach($socialDrivers as $driver => $name)
                     <div>
-                        <a id="social-login-{{$driver}}" class="button outline block svg" href="{{ url("/login/service/" . $driver) }}">
+                        <a id="social-login-{{$driver}}" class="button outline svg" href="{{ url("/login/service/" . $driver) }}">
                             @icon('auth/' . $driver)
-                            {{ trans('auth.log_in_with', ['socialDriver' => $name]) }}
+                            <span>{{ trans('auth.log_in_with', ['socialDriver' => $name]) }}</span>
                         </a>
                     </div>
                 @endforeach
             @endif
 
-            @if(setting('registration-enabled', false))
+            @if(setting('registration-enabled') && config('auth.method') === 'standard')
                 <div class="text-center pb-s">
                     <hr class="my-l">
                     <a href="{{ url('/register') }}">{{ trans('auth.dont_have_account') }}</a>

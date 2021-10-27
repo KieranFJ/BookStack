@@ -6,7 +6,7 @@
  */
 return [
 
-    'previous' => '&laquo; P¯edchozÌ',
-    'next'     => 'DalöÌ &raquo;',
+    'previous' => '&laquo; P≈ôedchoz√≠',
+    'next'     => 'Dal≈°√≠ &raquo;',
 
 ];

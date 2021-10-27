@@ -14,8 +14,8 @@ class CleanupImages extends Command
      * @var string
      */
     protected $signature = 'bookstack:cleanup-images
-                            {--a|all : Include images that are used in page revisions}
-                            {--f|force : Actually run the deletions}
+                            {--a|all : Also delete images that are only used in old revisions}
+                            {--f|force : Actually run the deletions, Defaults to a dry-run}
                             ';
 
     /**
@@ -25,11 +25,11 @@ class CleanupImages extends Command
      */
     protected $description = 'Cleanup images and drawings';
 
-
     protected $imageService;
 
     /**
      * Create a new command instance.
+     *
      * @param \BookStack\Uploads\ImageService $imageService
      */
     public function __construct(ImageService $imageService)
@@ -63,6 +63,7 @@ class CleanupImages extends Command
             $this->comment($deleteCount . ' images found that would have been deleted');
             $this->showDeletedImages($deleted);
             $this->comment('Run with -f or --force to perform deletions');
+
             return;
         }
 

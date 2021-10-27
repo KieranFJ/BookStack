@@ -11,14 +11,14 @@
 return [
 
     // Method of authentication to use
-    // Options: standard, ldap
+    // Options: standard, ldap, saml2, oidc
     'method' => env('AUTH_METHOD', 'standard'),
 
     // Authentication Defaults
     // This option controls the default authentication "guard" and password
     // reset options for your application.
     'defaults' => [
-        'guard' => 'web',
+        'guard'     => env('AUTH_METHOD', 'standard'),
         'passwords' => 'users',
     ],
 
@@ -26,16 +26,26 @@ return [
     // All authentication drivers have a user provider. This defines how the
     // users are actually retrieved out of your database or other storage
     // mechanisms used by this application to persist your user's data.
-    // Supported: "session", "token"
+    // Supported drivers: "session", "api-token", "ldap-session", "async-external-session"
     'guards' => [
-        'web' => [
-            'driver' => 'session',
+        'standard' => [
+            'driver'   => 'session',
             'provider' => 'users',
         ],
-
+        'ldap' => [
+            'driver'   => 'ldap-session',
+            'provider' => 'external',
+        ],
+        'saml2' => [
+            'driver'   => 'async-external-session',
+            'provider' => 'external',
+        ],
+        'oidc' => [
+            'driver'   => 'async-external-session',
+            'provider' => 'external',
+        ],
         'api' => [
-            'driver' => 'token',
-            'provider' => 'users',
+            'driver' => 'api-token',
         ],
     ],
 
@@ -43,17 +53,15 @@ return [
     // All authentication drivers have a user provider. This defines how the
     // users are actually retrieved out of your database or other storage
     // mechanisms used by this application to persist your user's data.
-    // Supported: database, eloquent, ldap
     'providers' => [
         'users' => [
-            'driver' => env('AUTH_METHOD', 'standard') === 'standard' ? 'eloquent' : env('AUTH_METHOD'),
-            'model' => \BookStack\Auth\User::class,
+            'driver' => 'eloquent',
+            'model'  => \BookStack\Auth\User::class,
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        'external' => [
+            'driver' => 'external-users',
+            'model'  => \BookStack\Auth\User::class,
+        ],
     ],
 
     // Resetting Passwords
@@ -63,9 +71,10 @@ return [
     'passwords' => [
         'users' => [
             'provider' => 'users',
-            'email' => 'emails.password',
-            'table' => 'password_resets',
-            'expire' => 60,
+            'email'    => 'emails.password',
+            'table'    => 'password_resets',
+            'expire'   => 60,
+            'throttle' => 60,
         ],
     ],
 

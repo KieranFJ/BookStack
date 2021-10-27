@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class AddRoleExternalAuthId extends Migration
 {
@@ -14,7 +14,7 @@ class AddRoleExternalAuthId extends Migration
     public function up()
     {
         Schema::table('roles', function (Blueprint $table) {
-            $table->string('external_auth_id', 200)->default('');
+            $table->string('external_auth_id', 180)->default('');
             $table->index('external_auth_id');
         });
     }

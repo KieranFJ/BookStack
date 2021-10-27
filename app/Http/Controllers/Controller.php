@@ -2,54 +2,35 @@
 
 namespace BookStack\Http\Controllers;
 
-use BookStack\Auth\User;
-use BookStack\Ownable;
+use BookStack\Facades\Activity;
+use BookStack\Interfaces\Loggable;
+use BookStack\Model;
+use finfo;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use Illuminate\Routing\Controller as BaseController;
 
 abstract class Controller extends BaseController
 {
-    use DispatchesJobs, ValidatesRequests;
+    use DispatchesJobs;
+    use ValidatesRequests;
 
     /**
-     * @var User static
+     * Check if the current user is signed in.
      */
-    protected $currentUser;
-    /**
-     * @var bool
-     */
-    protected $signedIn;
-
-    /**
-     * Controller constructor.
-     */
-    public function __construct()
+    protected function isSignedIn(): bool
     {
-        $this->middleware(function ($request, $next) {
-
-            // Get a user instance for the current user
-            $user = user();
-
-            // Share variables with controllers
-            $this->currentUser = $user;
-            $this->signedIn = auth()->check();
-
-            // Share variables with views
-            view()->share('signedIn', $this->signedIn);
-            view()->share('currentUser', $user);
-
-            return $next($request);
-        });
+        return auth()->check();
     }
 
     /**
      * Stops the application and shows a permission error if
      * the application is in demo mode.
      */
-    protected function preventAccessForDemoUsers()
+    protected function preventAccessInDemoMode()
     {
         if (config('app.env') === 'demo') {
             $this->showPermissionError();
@@ -58,9 +39,8 @@ abstract class Controller extends BaseController
 
     /**
      * Adds the page title into the view.
-     * @param $title
      */
-    public function setPageTitle($title)
+    public function setPageTitle(string $title)
     {
         view()->share('pageTitle', $title);
     }
@@ -75,107 +55,127 @@ abstract class Controller extends BaseController
             $response = response()->json(['error' => trans('errors.permissionJson')], 403);
         } else {
             $response = redirect('/');
-            session()->flash('error', trans('errors.permission'));
+            $this->showErrorNotification(trans('errors.permission'));
         }
 
         throw new HttpResponseException($response);
     }
 
     /**
-     * Checks for a permission.
-     * @param string $permissionName
-     * @return bool|\Illuminate\Http\RedirectResponse
+     * Checks that the current user has the given permission otherwise throw an exception.
      */
-    protected function checkPermission($permissionName)
+    protected function checkPermission(string $permission): void
     {
-        if (!user() || !user()->can($permissionName)) {
+        if (!user() || !user()->can($permission)) {
             $this->showPermissionError();
         }
-        return true;
     }
 
     /**
-     * Check the current user's permissions against an ownable item.
-     * @param $permission
-     * @param Ownable $ownable
-     * @return bool
+     * Check the current user's permissions against an ownable item otherwise throw an exception.
      */
-    protected function checkOwnablePermission($permission, Ownable $ownable)
+    protected function checkOwnablePermission(string $permission, Model $ownable): void
     {
-        if (userCan($permission, $ownable)) {
-            return true;
+        if (!userCan($permission, $ownable)) {
+            $this->showPermissionError();
         }
-        return $this->showPermissionError();
     }
 
     /**
-     * Check if a user has a permission or bypass if the callback is true.
-     * @param $permissionName
-     * @param $callback
-     * @return bool
+     * Check if a user has a permission or bypass the permission
+     * check if the given callback resolves true.
      */
-    protected function checkPermissionOr($permissionName, $callback)
+    protected function checkPermissionOr(string $permission, callable $callback): void
     {
-        $callbackResult = $callback();
-        if ($callbackResult === false) {
-            $this->checkPermission($permissionName);
+        if ($callback() !== true) {
+            $this->checkPermission($permission);
         }
-        return true;
     }
 
     /**
      * Check if the current user has a permission or bypass if the provided user
      * id matches the current user.
-     * @param string $permissionName
-     * @param int $userId
-     * @return bool
      */
-    protected function checkPermissionOrCurrentUser(string $permissionName, int $userId)
+    protected function checkPermissionOrCurrentUser(string $permission, int $userId): void
     {
-        return $this->checkPermissionOr($permissionName, function () use ($userId) {
-            return $userId === $this->currentUser->id;
+        $this->checkPermissionOr($permission, function () use ($userId) {
+            return $userId === user()->id;
         });
     }
 
     /**
      * Send back a json error message.
-     * @param string $messageText
-     * @param int $statusCode
-     * @return mixed
      */
-    protected function jsonError($messageText = "", $statusCode = 500)
+    protected function jsonError(string $messageText = '', int $statusCode = 500): JsonResponse
     {
-        return response()->json(['message' => $messageText], $statusCode);
-    }
-
-    /**
-     * Create the response for when a request fails validation.
-     * @param  \Illuminate\Http\Request  $request
-     * @param  array  $errors
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    protected function buildFailedValidationResponse(Request $request, array $errors)
-    {
-        if ($request->expectsJson()) {
-            return response()->json(['validation' => $errors], 422);
-        }
-
-        return redirect()->to($this->getRedirectUrl())
-            ->withInput($request->input())
-            ->withErrors($errors, $this->errorBag());
+        return response()->json(['message' => $messageText, 'status' => 'error'], $statusCode);
     }
 
     /**
      * Create a response that forces a download in the browser.
-     * @param string $content
-     * @param string $fileName
-     * @return \Illuminate\Http\Response
      */
-    protected function downloadResponse(string $content, string $fileName)
+    protected function downloadResponse(string $content, string $fileName): Response
     {
         return response()->make($content, 200, [
             'Content-Type'        => 'application/octet-stream',
-            'Content-Disposition' => 'attachment; filename="' . $fileName . '"'
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
         ]);
+    }
+
+    /**
+     * Create a file download response that provides the file with a content-type
+     * correct for the file, in a way so the browser can show the content in browser.
+     */
+    protected function inlineDownloadResponse(string $content, string $fileName): Response
+    {
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->buffer($content) ?: 'application/octet-stream';
+
+        return response()->make($content, 200, [
+            'Content-Type'        => $mime,
+            'Content-Disposition' => 'inline; filename="' . $fileName . '"',
+        ]);
+    }
+
+    /**
+     * Show a positive, successful notification to the user on next view load.
+     */
+    protected function showSuccessNotification(string $message): void
+    {
+        session()->flash('success', $message);
+    }
+
+    /**
+     * Show a warning notification to the user on next view load.
+     */
+    protected function showWarningNotification(string $message): void
+    {
+        session()->flash('warning', $message);
+    }
+
+    /**
+     * Show an error notification to the user on next view load.
+     */
+    protected function showErrorNotification(string $message): void
+    {
+        session()->flash('error', $message);
+    }
+
+    /**
+     * Log an activity in the system.
+     *
+     * @param string|Loggable
+     */
+    protected function logActivity(string $type, $detail = ''): void
+    {
+        Activity::add($type, $detail);
+    }
+
+    /**
+     * Get the validation rules for image files.
+     */
+    protected function getImageValidationRules(): string
+    {
+        return 'image_extension|mimes:jpeg,png,gif,webp';
     }
 }

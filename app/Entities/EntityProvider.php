@@ -1,17 +1,23 @@
-<?php namespace BookStack\Entities;
+<?php
+
+namespace BookStack\Entities;
+
+use BookStack\Entities\Models\Book;
+use BookStack\Entities\Models\Bookshelf;
+use BookStack\Entities\Models\Chapter;
+use BookStack\Entities\Models\Entity;
+use BookStack\Entities\Models\Page;
+use BookStack\Entities\Models\PageRevision;
 
 /**
- * Class EntityProvider
+ * Class EntityProvider.
  *
  * Provides access to the core entity models.
  * Wrapped up in this provider since they are often used together
  * so this is a neater alternative to injecting all in individually.
- *
- * @package BookStack\Entities
  */
 class EntityProvider
 {
-
     /**
      * @var Bookshelf
      */
@@ -37,70 +43,52 @@ class EntityProvider
      */
     public $pageRevision;
 
-    /**
-     * EntityProvider constructor.
-     * @param Bookshelf $bookshelf
-     * @param Book $book
-     * @param Chapter $chapter
-     * @param Page $page
-     * @param PageRevision $pageRevision
-     */
-    public function __construct(
-        Bookshelf $bookshelf,
-        Book $book,
-        Chapter $chapter,
-        Page $page,
-        PageRevision $pageRevision
-    ) {
-        $this->bookshelf = $bookshelf;
-        $this->book = $book;
-        $this->chapter = $chapter;
-        $this->page = $page;
-        $this->pageRevision = $pageRevision;
+    public function __construct()
+    {
+        $this->bookshelf = new Bookshelf();
+        $this->book = new Book();
+        $this->chapter = new Chapter();
+        $this->page = new Page();
+        $this->pageRevision = new PageRevision();
     }
 
     /**
      * Fetch all core entity types as an associated array
      * with their basic names as the keys.
-     * @return Entity[]
+     *
+     * @return array<Entity>
      */
-    public function all()
+    public function all(): array
     {
         return [
             'bookshelf' => $this->bookshelf,
-            'book' => $this->book,
-            'chapter' => $this->chapter,
-            'page' => $this->page,
+            'book'      => $this->book,
+            'chapter'   => $this->chapter,
+            'page'      => $this->page,
         ];
     }
 
     /**
      * Get an entity instance by it's basic name.
-     * @param string $type
-     * @return Entity
      */
-    public function get(string $type)
+    public function get(string $type): Entity
     {
         $type = strtolower($type);
+
         return $this->all()[$type];
     }
 
     /**
      * Get the morph classes, as an array, for a single or multiple types.
-     * @param string|array $types
-     * @return array<string>
      */
-    public function getMorphClasses($types)
+    public function getMorphClasses(array $types): array
     {
-        if (is_string($types)) {
-            $types = [$types];
-        }
-
         $morphClasses = [];
         foreach ($types as $type) {
             $model = $this->get($type);
             $morphClasses[] = $model->getMorphClass();
         }
+
         return $morphClasses;
     }
 }

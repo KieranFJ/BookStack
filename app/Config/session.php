@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Str;
+
 /**
  * Session configuration options.
  *
@@ -35,12 +37,17 @@ return [
     // Session database table, if database driver is in use
     'table' => 'sessions',
 
+    // Session Cache Store
+    // When using the "apc" or "memcached" session drivers, you may specify a
+    // cache store that should be used for these sessions. This value must
+    // correspond with one of the application's configured cache stores.
+    'store' => null,
+
     // Session Sweeping Lottery
     // Some session drivers must manually sweep their storage location to get
     // rid of old sessions from storage. Here are the chances that it will
     // happen on a given request. By default, the odds are 2 out of 100.
     'lottery' => [2, 100],
-
 
     // Session Cookie Name
     // Here you may change the name of the cookie used to identify a session
@@ -52,7 +59,7 @@ return [
     // The session cookie path determines the path for which the cookie will
     // be regarded as available. Typically, this will be the root path of
     // your application but you are free to change this when necessary.
-    'path' => '/',
+    'path' => '/' . (explode('/', env('APP_URL', ''), 4)[3] ?? ''),
 
     // Session Cookie Domain
     // Here you may change the domain of the cookie used to identify a session
@@ -64,7 +71,8 @@ return [
     // By setting this option to true, session cookies will only be sent back
     // to the server if the browser has a HTTPS connection. This will keep
     // the cookie from being sent to you if it can not be done securely.
-    'secure' => env('SESSION_SECURE_COOKIE', false),
+    'secure' => env('SESSION_SECURE_COOKIE', null)
+        ?? Str::startsWith(env('APP_URL'), 'https:'),
 
     // HTTP Access Only
     // Setting this value to true will prevent JavaScript from accessing the
@@ -75,6 +83,6 @@ return [
     // This option determines how your cookies behave when cross-site requests
     // take place, and can be used to mitigate CSRF attacks. By default, we
     // do not enable this as other CSRF protection services are in place.
-    // Options: lax, strict
-    'same_site' => null,
+    // Options: lax, strict, none
+    'same_site' => 'lax',
 ];

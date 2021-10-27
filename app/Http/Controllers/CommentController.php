@@ -1,49 +1,37 @@
-<?php namespace BookStack\Http\Controllers;
+<?php
 
-use Activity;
+namespace BookStack\Http\Controllers;
+
 use BookStack\Actions\CommentRepo;
-use BookStack\Entities\Repos\EntityRepo;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use BookStack\Entities\Models\Page;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class CommentController extends Controller
 {
-    protected $entityRepo;
     protected $commentRepo;
 
-    /**
-     * CommentController constructor.
-     * @param \BookStack\Entities\Repos\EntityRepo $entityRepo
-     * @param \BookStack\Actions\CommentRepo $commentRepo
-     */
-    public function __construct(EntityRepo $entityRepo, CommentRepo $commentRepo)
+    public function __construct(CommentRepo $commentRepo)
     {
-        $this->entityRepo = $entityRepo;
         $this->commentRepo = $commentRepo;
-        parent::__construct();
     }
 
     /**
-     * Save a new comment for a Page
-     * @param Request $request
-     * @param integer $pageId
-     * @param null|integer $commentId
-     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse|\Symfony\Component\HttpFoundation\Response
+     * Save a new comment for a Page.
+     *
+     * @throws ValidationException
      */
-    public function savePageComment(Request $request, $pageId, $commentId = null)
+    public function savePageComment(Request $request, int $pageId)
     {
         $this->validate($request, [
-            'text' => 'required|string',
-            'html' => 'required|string',
+            'text'      => 'required|string',
+            'parent_id' => 'nullable|integer',
         ]);
 
-        try {
-            $page = $this->entityRepo->getById('page', $pageId, true);
-        } catch (ModelNotFoundException $e) {
+        $page = Page::visible()->find($pageId);
+        if ($page === null) {
             return response('Not found', 404);
         }
-
-        $this->checkOwnablePermission('page-view', $page);
 
         // Prevent adding comments to draft pages
         if ($page->draft) {
@@ -52,42 +40,41 @@ class CommentController extends Controller
 
         // Create a new comment.
         $this->checkPermission('comment-create-all');
-        $comment = $this->commentRepo->create($page, $request->only(['html', 'text', 'parent_id']));
-        Activity::add($page, 'commented_on', $page->book->id);
+        $comment = $this->commentRepo->create($page, $request->get('text'), $request->get('parent_id'));
+
         return view('comments.comment', ['comment' => $comment]);
     }
 
     /**
      * Update an existing comment.
-     * @param Request $request
-     * @param integer $commentId
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     *
+     * @throws ValidationException
      */
-    public function update(Request $request, $commentId)
+    public function update(Request $request, int $commentId)
     {
         $this->validate($request, [
             'text' => 'required|string',
-            'html' => 'required|string',
         ]);
 
         $comment = $this->commentRepo->getById($commentId);
         $this->checkOwnablePermission('page-view', $comment->entity);
         $this->checkOwnablePermission('comment-update', $comment);
 
-        $comment = $this->commentRepo->update($comment, $request->only(['html', 'text']));
+        $comment = $this->commentRepo->update($comment, $request->get('text'));
+
         return view('comments.comment', ['comment' => $comment]);
     }
 
     /**
      * Delete a comment from the system.
-     * @param integer $id
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy($id)
+    public function destroy(int $id)
     {
         $comment = $this->commentRepo->getById($id);
         $this->checkOwnablePermission('comment-delete', $comment);
+
         $this->commentRepo->delete($comment);
+
         return response()->json(['message' => trans('entities.comment_deleted')]);
     }
 }

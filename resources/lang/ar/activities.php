@@ -1,11 +1,9 @@
 <?php
-
+/**
+ * Activity text strings.
+ * Is used for all the text within activity logs & notifications.
+ */
 return [
-
-    /**
-     * Activity text strings.
-     * Is used for all the text within activity logs & notifications.
-     */
 
     // Pages
     'page_create'                 => 'تم إنشاء صفحة',
@@ -35,8 +33,25 @@ return [
     'book_delete'                 => 'تم حذف الكتاب',
     'book_delete_notification'    => 'تم حذف الكتاب بنجاح',
     'book_sort'                   => 'تم سرد الكتاب',
-    'book_sort_notification'      => 'تمت إعادة سرد الكتاب بنجاح',
+    'book_sort_notification'      => 'أُعِيدَ سرد الكتاب بنجاح',
+
+    // Bookshelves
+    'bookshelf_create'            => 'تم إنشاء رف الكتب',
+    'bookshelf_create_notification'    => 'تم إنشاء الرف بنجاح',
+    'bookshelf_update'                 => 'تم تحديث الرف',
+    'bookshelf_update_notification'    => 'تم تحديث الرف بنجاح',
+    'bookshelf_delete'                 => 'تم تحديث الرف',
+    'bookshelf_delete_notification'    => 'تم حذف الرف بنجاح',
+
+    // Favourites
+    'favourite_add_notification' => '":name" has been added to your favourites',
+    'favourite_remove_notification' => '":name" has been removed from your favourites',
+
+    // MFA
+    'mfa_setup_method_notification' => 'Multi-factor method successfully configured',
+    'mfa_remove_method_notification' => 'Multi-factor method successfully removed',
 
     // Other
     'commented_on'                => 'تم التعليق',
+    'permissions_update'          => 'تحديث الأذونات',
 ];

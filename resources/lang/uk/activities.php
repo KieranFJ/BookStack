@@ -1,7 +1,7 @@
 <?php
 /**
- * Activity text strings. / Текстові рядки активності.
- * Is used for all the text within activity logs & notifications. / Використовується для всього тексту в журналах активності та сповіщеннях.
+ * Activity text strings.
+ * Is used for all the text within activity logs & notifications.
  */
 return [
 
@@ -36,13 +36,22 @@ return [
     'book_sort_notification'      => 'Книгу успішно відновлено',
 
     // Bookshelves
-    'bookshelf_create'            => 'створено книжкову полицю',
+    'bookshelf_create'            => 'створив книжкову полицю',
     'bookshelf_create_notification'    => 'Книжкову полицю успішно створено',
     'bookshelf_update'                 => 'оновив книжкову полицю',
     'bookshelf_update_notification'    => 'Книжкову полицю успішно оновлено',
     'bookshelf_delete'                 => 'видалив книжкову полицю',
     'bookshelf_delete_notification'    => 'Книжкову полицю успішно видалено',
 
+    // Favourites
+    'favourite_add_notification' => '":ім\'я" було додане до ваших улюлених',
+    'favourite_remove_notification' => '":ім\'я" було видалено з ваших улюблених',
+
+    // MFA
+    'mfa_setup_method_notification' => 'Багатофакторний метод успішно налаштований',
+    'mfa_remove_method_notification' => 'Багатофакторний метод успішно видалений',
+
     // Other
     'commented_on'                => 'прокоментував',
+    'permissions_update'          => 'оновив дозволи',
 ];

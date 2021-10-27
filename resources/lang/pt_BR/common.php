@@ -11,20 +11,20 @@ return [
     'save' => 'Salvar',
     'continue' => 'Continuar',
     'select' => 'Selecionar',
-    'toggle_all' => 'Alternar Tudo',
+    'toggle_all' => 'Alternar Todos',
     'more' => 'Mais',
 
     // Form Labels
     'name' => 'Nome',
     'description' => 'Descrição',
-    'role' => 'Regra',
+    'role' => 'Cargo',
     'cover_image' => 'Imagem de capa',
-    'cover_image_description' => 'Esta imagem deve ser aproximadamente 300x170px.',
+    'cover_image_description' => 'Esta imagem deve ser aproximadamente 440x250px.',
     
     // Actions
     'actions' => 'Ações',
     'view' => 'Visualizar',
-    'view_all' => 'Ver Tudo',
+    'view_all' => 'Visualizar Tudo',
     'create' => 'Criar',
     'update' => 'Atualizar',
     'edit' => 'Editar',
@@ -33,14 +33,26 @@ return [
     'copy' => 'Copiar',
     'reply' => 'Responder',
     'delete' => 'Excluir',
+    'delete_confirm' => 'Confirmar Exclusão',
     'search' => 'Pesquisar',
     'search_clear' => 'Limpar Pesquisa',
-    'reset' => 'Resetar',
+    'reset' => 'Redefinir',
     'remove' => 'Remover',
     'add' => 'Adicionar',
+    'configure' => 'Configure',
+    'fullscreen' => 'Tela cheia',
+    'favourite' => 'Favoritos',
+    'unfavourite' => 'Remover dos Favoritos',
+    'next' => 'Seguinte',
+    'previous' => 'Anterior',
 
     // Sort Options
+    'sort_options' => 'Opções de Ordenação',
+    'sort_direction_toggle' => 'Alternar Direção de Ordenação',
+    'sort_ascending' => 'Ordenação Crescente',
+    'sort_descending' => 'Ordenação Decrescente',
     'sort_name' => 'Nome',
+    'sort_default' => 'Padrão',
     'sort_created_at' => 'Data de Criação',
     'sort_updated_at' => 'Data de Atualização',
 
@@ -49,22 +61,35 @@ return [
     'no_activity' => 'Nenhuma atividade a mostrar',
     'no_items' => 'Nenhum item disponível',
     'back_to_top' => 'Voltar ao topo',
+    'skip_to_main_content' => 'Ir para o conteúdo principal',
     'toggle_details' => 'Alternar Detalhes',
     'toggle_thumbnails' => 'Alternar Miniaturas',
     'details' => 'Detalhes',
     'grid_view' => 'Visualização em Grade',
     'list_view' => 'Visualização em Lista',
     'default' => 'Padrão',
+    'breadcrumb' => 'Caminho',
 
     // Header
+    'header_menu_expand' => 'Expand Header Menu',
+    'profile_menu' => 'Menu de Perfil',
     'view_profile' => 'Visualizar Perfil',
     'edit_profile' => 'Editar Perfil',
+    'dark_mode' => 'Modo Escuro',
+    'light_mode' => 'Modo Claro',
 
     // Layout tabs
-    'tab_info' => 'Info',
+    'tab_info' => 'Informações',
+    'tab_info_label' => 'Tab: Show Secondary Information',
     'tab_content' => 'Conteúdo',
+    'tab_content_label' => 'Tab: Show Primary Content',
 
     // Email Content
     'email_action_help' => 'Se você estiver tendo problemas ao clicar o botão ":actionText", copie e cole a URL abaixo no seu navegador:',
     'email_rights' => 'Todos os direitos reservados',
+
+    // Footer Link Options
+    // Not directly used but available for convenience to users.
+    'privacy_policy' => 'Políticas de Privacidade',
+    'terms_of_service' => 'Termos de Serviço',
 ];

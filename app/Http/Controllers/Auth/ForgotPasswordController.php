@@ -2,10 +2,11 @@
 
 namespace BookStack\Http\Controllers\Auth;
 
+use BookStack\Actions\ActivityType;
 use BookStack\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
 use Illuminate\Http\Request;
-use Password;
+use Illuminate\Support\Facades\Password;
 
 class ForgotPasswordController extends Controller
 {
@@ -30,14 +31,14 @@ class ForgotPasswordController extends Controller
     public function __construct()
     {
         $this->middleware('guest');
-        parent::__construct();
+        $this->middleware('guard:standard');
     }
-
 
     /**
      * Send a reset link to the given user.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Http\RedirectResponse
      */
     public function sendResetLinkEmail(Request $request)
@@ -52,8 +53,13 @@ class ForgotPasswordController extends Controller
         );
 
         if ($response === Password::RESET_LINK_SENT) {
-            $message = trans('auth.reset_password_sent_success', ['email' => $request->get('email')]);
-            session()->flash('success', $message);
+            $this->logActivity(ActivityType::AUTH_PASSWORD_RESET, $request->get('email'));
+        }
+
+        if (in_array($response, [Password::RESET_LINK_SENT, Password::INVALID_USER, Password::RESET_THROTTLED])) {
+            $message = trans('auth.reset_password_sent', ['email' => $request->get('email')]);
+            $this->showSuccessNotification($message);
+
             return back()->with('status', trans($response));
         }
 

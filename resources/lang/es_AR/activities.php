@@ -1,11 +1,9 @@
 <?php
-
+/**
+ * Activity text strings.
+ * Is used for all the text within activity logs & notifications.
+ */
 return [
-
-    /**
-     * Activity text strings.
-     * Is used for all the text within activity logs & notifications.
-     */
 
     // Pages
     'page_create'                 => 'página creada',
@@ -45,6 +43,15 @@ return [
     'bookshelf_delete'                 => 'Estante borrado',
     'bookshelf_delete_notification'    => 'Estante borrado exitosamente',
 
+    // Favourites
+    'favourite_add_notification' => '".name" se añadió a sus favoritos',
+    'favourite_remove_notification' => '".name" se eliminó de sus favoritos',
+
+    // MFA
+    'mfa_setup_method_notification' => 'Método de autenticación de múltiples factores configurado satisfactoriamente',
+    'mfa_remove_method_notification' => 'Método de autenticación de múltiples factores eliminado satisfactoriamente',
+
     // Other
     'commented_on'                => 'comentado',
+    'permissions_update'          => 'permisos actualizados',
 ];

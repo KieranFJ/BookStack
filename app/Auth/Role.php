@@ -1,27 +1,42 @@
-<?php namespace BookStack\Auth;
+<?php
+
+namespace BookStack\Auth;
 
 use BookStack\Auth\Permissions\JointPermission;
 use BookStack\Auth\Permissions\RolePermission;
+use BookStack\Interfaces\Loggable;
 use BookStack\Model;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Role extends Model
+/**
+ * Class Role.
+ *
+ * @property int        $id
+ * @property string     $display_name
+ * @property string     $description
+ * @property string     $external_auth_id
+ * @property string     $system_name
+ * @property bool       $mfa_enforced
+ * @property Collection $users
+ */
+class Role extends Model implements Loggable
 {
-
     protected $fillable = ['display_name', 'description', 'external_auth_id'];
 
     /**
      * The roles that belong to the role.
      */
-    public function users()
+    public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)->orderBy('name', 'asc');
     }
 
     /**
      * Get all related JointPermissions.
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function jointPermissions()
+    public function jointPermissions(): HasMany
     {
         return $this->hasMany(JointPermission::class);
     }
@@ -29,17 +44,15 @@ class Role extends Model
     /**
      * The RolePermissions that belong to the role.
      */
-    public function permissions()
+    public function permissions(): BelongsToMany
     {
         return $this->belongsToMany(RolePermission::class, 'permission_role', 'role_id', 'permission_id');
     }
 
     /**
      * Check if this role has a permission.
-     * @param $permissionName
-     * @return bool
      */
-    public function hasPermission($permissionName)
+    public function hasPermission(string $permissionName): bool
     {
         $permissions = $this->getRelationValue('permissions');
         foreach ($permissions as $permission) {
@@ -47,12 +60,12 @@ class Role extends Model
                 return true;
             }
         }
+
         return false;
     }
 
     /**
      * Add a permission to this role.
-     * @param RolePermission $permission
      */
     public function attachPermission(RolePermission $permission)
     {
@@ -61,39 +74,52 @@ class Role extends Model
 
     /**
      * Detach a single permission from this role.
-     * @param RolePermission $permission
      */
     public function detachPermission(RolePermission $permission)
     {
-        $this->permissions()->detach($permission->id);
+        $this->permissions()->detach([$permission->id]);
     }
 
     /**
-     * Get the role object for the specified role.
-     * @param $roleName
-     * @return Role
+     * Get the role of the specified display name.
      */
-    public static function getRole($roleName)
+    public static function getRole(string $displayName): ?Role
     {
-        return static::where('name', '=', $roleName)->first();
+        return static::query()->where('display_name', '=', $displayName)->first();
     }
 
     /**
      * Get the role object for the specified system role.
-     * @param $roleName
-     * @return Role
      */
-    public static function getSystemRole($roleName)
+    public static function getSystemRole(string $systemName): ?Role
     {
-        return static::where('system_name', '=', $roleName)->first();
+        return static::query()->where('system_name', '=', $systemName)->first();
     }
 
     /**
-     * Get all visible roles
-     * @return mixed
+     * Get all visible roles.
      */
-    public static function visible()
+    public static function visible(): Collection
     {
-        return static::where('hidden', '=', false)->orderBy('name')->get();
+        return static::query()->where('hidden', '=', false)->orderBy('name')->get();
+    }
+
+    /**
+     * Get the roles that can be restricted.
+     */
+    public static function restrictable(): Collection
+    {
+        return static::query()
+            ->where('system_name', '!=', 'admin')
+            ->orderBy('display_name', 'asc')
+            ->get();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function logDescriptor(): string
+    {
+        return "({$this->id}) {$this->display_name}";
     }
 }

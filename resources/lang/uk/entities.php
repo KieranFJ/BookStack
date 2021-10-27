@@ -1,7 +1,7 @@
 <?php
 /**
- * Text used for 'Entities' (Document Structure Elements) such as / Текст використовується для "об'єктів" (елементів структури документів), таких як
- * Books, Shelves, Chapters & Pages / Книги, Полиці, Розділи та Сторінки
+ * Text used for 'Entities' (Document Structure Elements) such as
+ * Books, Shelves, Chapters & Pages
  */
 return [
 
@@ -22,10 +22,13 @@ return [
     'meta_created_name' => ':user створив :timeLength',
     'meta_updated' => 'Оновлено :timeLength',
     'meta_updated_name' => ':user оновив :timeLength',
+    'meta_owned_name' => 'Власник :user',
     'entity_select' => 'Вибір об\'єкта',
     'images' => 'Зображення',
     'my_recent_drafts' => 'Мої останні чернетки',
     'my_recently_viewed' => 'Мої недавні перегляди',
+    'my_most_viewed_favourites' => 'My Most Viewed Favourites',
+    'my_favourites' => 'My Favourites',
     'no_pages_viewed' => 'Ви не переглядали жодної сторінки',
     'no_pages_recently_created' => 'Не було створено жодної сторінки',
     'no_pages_recently_updated' => 'Немає недавно оновлених сторінок',
@@ -33,12 +36,14 @@ return [
     'export_html' => 'Вбудований веб-файл',
     'export_pdf' => 'PDF файл',
     'export_text' => 'Текстовий файл',
+    'export_md' => 'Markdown File',
 
     // Permissions and restrictions
     'permissions' => 'Дозволи',
     'permissions_intro' => 'Після ввімкнення ці дозволи будуть мати вищий пріоритет ніж інші дозволи ролей.',
     'permissions_enable' => 'Увімкнути спеціальні дозволи',
     'permissions_save' => 'Зберегти дозволи',
+    'permissions_owner' => 'Власник',
 
     // Search
     'search_results' => 'Результати пошуку',
@@ -47,7 +52,8 @@ return [
     'search_no_pages' => 'Немає сторінок, які відповідають цьому пошуку',
     'search_for_term' => 'Шукати :term',
     'search_more' => 'Більше результатів',
-    'search_filters' => 'Фільтри пошуку',
+    'search_advanced' => 'Розширений пошук',
+    'search_terms' => 'Пошукові фрази',
     'search_content_type' => 'Тип вмісту',
     'search_exact_matches' => 'Точна відповідність',
     'search_tags' => 'Пошукові теги',
@@ -57,6 +63,7 @@ return [
     'search_permissions_set' => 'Налаштування дозволів',
     'search_created_by_me' => 'Створено мною',
     'search_updated_by_me' => 'Оновлено мною',
+    'search_owned_by_me' => 'Належать мені',
     'search_date_options' => 'Параметри дати',
     'search_updated_before' => 'Оновлено до',
     'search_updated_after' => 'Оновлено після',
@@ -92,6 +99,7 @@ return [
     'shelves_permissions' => 'Дозволи на книжкову полицю',
     'shelves_permissions_updated' => 'Дозволи на книжкову полицю оновлено',
     'shelves_permissions_active' => 'Діючі дозволи на книжкову полицю',
+    'shelves_permissions_cascade_warning' => 'Permissions on bookshelves do not automatically cascade to contained books. This is because a book can exist on multiple shelves. Permissions can however be copied down to child books using the option found below.',
     'shelves_copy_permissions_to_books' => 'Копіювати дозволи на книги',
     'shelves_copy_permissions' => 'Копіювати дозволи',
     'shelves_copy_permissions_explain' => 'Це застосовує поточні налаштування дозволів цієї книжкової полиці до всіх книг, що містяться всередині. Перш ніж активувати, переконайтесь що будь-які зміни дозволів цієї книжкової полиці були збережені.',
@@ -145,7 +153,7 @@ return [
     'chapters_create' => 'Створити новий розділ',
     'chapters_delete' => 'Видалити розділ',
     'chapters_delete_named' => 'Видалити розділ :chapterName',
-    'chapters_delete_explain' => 'Ця дія видалить розділ з назвою \':chapterName\'. Всі сторінки будуть вилучені, та додані безпосередньо до батьківської книги.',
+    'chapters_delete_explain' => 'Це видалить розділ під назвою \':chapterName\'. Усі сторінки, що існують у цьому розділі, також будуть видалені.',
     'chapters_delete_confirm' => 'Ви впевнені, що хочете видалити цей розділ?',
     'chapters_edit' => 'Редагувати розділ',
     'chapters_edit_named' => 'Редагувати розділ :chapterName',
@@ -176,12 +184,12 @@ return [
     'pages_delete_confirm' => 'Ви впевнені, що хочете видалити цю сторінку?',
     'pages_delete_draft_confirm' => 'Ви впевнені, що хочете видалити цю чернетку?',
     'pages_editing_named' => 'Редагування сторінки :pageName',
-    'pages_edit_toggle_header' => 'Переключити заголовок',
+    'pages_edit_draft_options' => 'Параметри чернетки',
     'pages_edit_save_draft' => 'Зберегти чернетку',
     'pages_edit_draft' => 'Редагувати чернетку сторінки',
     'pages_editing_draft' => 'Редагування чернетки',
     'pages_editing_page' => 'Редагування сторінки',
-    'pages_edit_draft_save_at' => 'Чернетку зберегти в ',
+    'pages_edit_draft_save_at' => 'Чернетка збережена о ',
     'pages_edit_delete_draft' => 'Видалити чернетку',
     'pages_edit_discard_draft' => 'Відхилити чернетку',
     'pages_edit_set_changelog' => 'Встановити журнал змін',
@@ -207,6 +215,7 @@ return [
     'pages_revisions' => 'Версія сторінки',
     'pages_revisions_named' => 'Версії сторінки для :pageName',
     'pages_revision_named' => 'Версія сторінки для :pageName',
+    'pages_revision_restored_from' => 'Відновлено з #:id; :summary',
     'pages_revisions_created_by' => 'Створена',
     'pages_revisions_date' => 'Дата версії',
     'pages_revisions_number' => '#',
@@ -225,6 +234,7 @@ return [
     'pages_initial_name' => 'Нова сторінка',
     'pages_editing_draft_notification' => 'Ви наразі редагуєте чернетку, що була збережена останньою :timeDiff.',
     'pages_draft_edited_notification' => 'З того часу ця сторінка була оновлена. Рекомендуємо відмовитися від цього проекту.',
+    'pages_draft_page_changed_since_creation' => 'This page has been updated since this draft was created. It is recommended that you discard this draft or take care not to overwrite any page changes.',
     'pages_draft_edit_active' => [
         'start_a' => ':count користувачі(в) почали редагувати цю сторінку',
         'start_b' => ':userName розпочав редагування цієї сторінки',
@@ -234,6 +244,7 @@ return [
     ],
     'pages_draft_discarded' => 'Чернетка відхилена, редактор оновлено з поточним вмістом сторінки',
     'pages_specific' => 'Конкретна сторінка',
+    'pages_is_template' => 'Шаблон сторінки',
 
     // Editor Sidebar
     'page_tags' => 'Теги сторінки',
@@ -242,9 +253,11 @@ return [
     'shelf_tags' => 'Теги полиць',
     'tag' => 'Тег',
     'tags' =>  'Теги',
+    'tag_name' =>  'Назва тегу',
     'tag_value' => 'Значення тегу (необов\'язково)',
     'tags_explain' => "Додайте кілька тегів, щоб краще класифікувати ваш вміст. \n Ви можете присвоїти значення тегу для більш глибокої організації.",
     'tags_add' => 'Додати ще один тег',
+    'tags_remove' => 'Видалити цей тег',
     'attachments' => 'Вкладення',
     'attachments_explain' => 'Завантажте файли, або додайте посилання, які відображатимуться на вашій сторінці. Їх буде видно на бічній панелі сторінки.',
     'attachments_explain_instant_save' => 'Зміни тут зберігаються миттєво.',
@@ -252,7 +265,7 @@ return [
     'attachments_upload' => 'Завантажити файл',
     'attachments_link' => 'Приєднати посилання',
     'attachments_set_link' => 'Встановити посилання',
-    'attachments_delete_confirm' => 'Натисніть кнопку Видалити ще раз, щоб підтвердити, що ви хочете видалити це вкладення.',
+    'attachments_delete' => 'Дійсно хочете видалити це вкладення?',
     'attachments_dropzone' => 'Перетягніть файли, або натисніть тут щоб прикріпити файл',
     'attachments_no_files' => 'Файли не завантажені',
     'attachments_explain_link' => 'Ви можете приєднати посилання, якщо не бажаєте завантажувати файл. Це може бути посилання на іншу сторінку або посилання на файл у хмарі.',
@@ -261,6 +274,7 @@ return [
     'attachments_link_url' => 'Посилання на файл',
     'attachments_link_url_hint' => 'URL-адреса сайту або файлу',
     'attach' => 'Приєднати',
+    'attachments_insert_link' => 'Додати посилання на вкладення',
     'attachments_edit_file' => 'Редагувати файл',
     'attachments_edit_file_name' => 'Назва файлу',
     'attachments_edit_drop_upload' => 'Перетягніть файли, або натисніть тут щоб завантажити та перезаписати',
@@ -270,6 +284,12 @@ return [
     'attachments_file_uploaded' => 'Файл успішно завантажений',
     'attachments_file_updated' => 'Файл успішно оновлено',
     'attachments_link_attached' => 'Посилання успішно додано до сторінки',
+    'templates' => 'Шаблони',
+    'templates_set_as_template' => 'Сторінка це шаблон',
+    'templates_explain_set_as_template' => 'Ви можете встановити цю сторінку як шаблон, щоб її вміст використовувався під час створення інших сторінок. Інші користувачі зможуть користуватися цим шаблоном, якщо вони мають права перегляду для цієї сторінки.',
+    'templates_replace_content' => 'Замінити вміст сторінки',
+    'templates_append_content' => 'Додати до вмісту сторінки',
+    'templates_prepend_content' => 'Додати на початок вмісту сторінки',
 
     // Profile View
     'profile_user_for_x' => 'Користувач вже :time',

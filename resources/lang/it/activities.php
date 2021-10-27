@@ -1,14 +1,12 @@
 <?php
-
+/**
+ * Activity text strings.
+ * Is used for all the text within activity logs & notifications.
+ */
 return [
 
-    /**
-     * Activity text strings.
-     * Is used for all the text within activity logs & notifications.
-     */
-
     // Pages
-    'page_create'                 => 'ha creato la pagina',
+    'page_create'                 => 'pagina creata',
     'page_create_notification'    => 'Pagina Creata Correttamente',
     'page_update'                 => 'ha aggiornato la pagina',
     'page_update_notification'    => 'Pagina Aggiornata Correttamente',
@@ -25,7 +23,7 @@ return [
     'chapter_update_notification' => 'Capitolo Aggiornato Correttamente',
     'chapter_delete'              => 'ha eliminato il capitolo',
     'chapter_delete_notification' => 'Capitolo Eliminato Correttamente',
-    'chapter_move'                => 'ha mosso il capitolo',
+    'chapter_move'                => 'ha spostato il capitolo',
 
     // Books
     'book_create'                 => 'ha creato il libro',
@@ -37,6 +35,23 @@ return [
     'book_sort'                   => 'ha ordinato il libro',
     'book_sort_notification'      => 'Libro Riordinato Correttamente',
 
+    // Bookshelves
+    'bookshelf_create'            => 'ha creato la Libreria',
+    'bookshelf_create_notification'    => 'Libreria Creata Correttamente',
+    'bookshelf_update'                 => 'ha aggiornato la libreria',
+    'bookshelf_update_notification'    => 'Libreria Aggiornata Correttamente',
+    'bookshelf_delete'                 => 'ha eliminato la libreria',
+    'bookshelf_delete_notification'    => 'Libreria Eliminata Correttamente',
+
+    // Favourites
+    'favourite_add_notification' => '":name" è stato aggiunto ai tuoi preferiti',
+    'favourite_remove_notification' => '":name" è stato rimosso dai tuoi preferiti',
+
+    // MFA
+    'mfa_setup_method_notification' => 'Metodo multi-fattore impostato con successo',
+    'mfa_remove_method_notification' => 'Metodo multi-fattore rimosso con successo',
+
     // Other
     'commented_on'                => 'ha commentato in',
+    'permissions_update'          => 'autorizzazioni aggiornate',
 ];

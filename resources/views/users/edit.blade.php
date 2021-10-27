@@ -1,20 +1,20 @@
-@extends('simple-layout')
+@extends('layouts.simple')
 
 @section('body')
     <div class="container small">
 
         <div class="py-m">
-            @include('settings.navbar', ['selected' => 'users'])
+            @include('settings.parts.navbar', ['selected' => 'users'])
         </div>
 
         <section class="card content-wrap">
-            <h1 class="list-heading">{{ $user->id === $currentUser->id ? trans('settings.users_edit_profile') : trans('settings.users_edit') }}</h1>
+            <h1 class="list-heading">{{ $user->id === user()->id ? trans('settings.users_edit_profile') : trans('settings.users_edit') }}</h1>
             <form action="{{ url("/settings/users/{$user->id}") }}" method="post" enctype="multipart/form-data">
                 {!! csrf_field() !!}
                 <input type="hidden" name="_method" value="PUT">
 
                 <div class="setting-list">
-                    @include('users.form', ['model' => $user, 'authMethod' => $authMethod])
+                    @include('users.parts.form', ['model' => $user, 'authMethod' => $authMethod])
 
                     <div class="grid half gap-xl">
                         <div>
@@ -22,7 +22,7 @@
                             <p class="small">{{ trans('settings.users_avatar_desc') }}</p>
                         </div>
                         <div>
-                            @include('components.image-picker', [
+                            @include('form.image-picker', [
                                 'resizeHeight' => '512',
                                 'resizeWidth' => '512',
                                 'showRemove' => false,
@@ -54,7 +54,7 @@
                 </div>
 
                 <div class="text-right">
-                    <a href="{{  url($currentUser->can('users-manage') ? "/settings/users" : "/") }}" class="button outline">{{ trans('common.cancel') }}</a>
+                    <a href="{{  url(userCan('users-manage') ? "/settings/users" : "/") }}" class="button outline">{{ trans('common.cancel') }}</a>
                     @if($authMethod !== 'system')
                         <a href="{{ url("/settings/users/{$user->id}/delete") }}" class="button outline">{{ trans('settings.users_delete') }}</a>
                     @endif
@@ -63,7 +63,28 @@
             </form>
         </section>
 
-        @if($currentUser->id === $user->id && count($activeSocialDrivers) > 0)
+        <section class="card content-wrap auto-height">
+            <h2 class="list-heading">{{ trans('settings.users_mfa') }}</h2>
+            <p>{{ trans('settings.users_mfa_desc') }}</p>
+            <div class="grid half gap-xl v-center pb-s">
+                <div>
+                    @if ($mfaMethods->count() > 0)
+                        <span class="text-pos">@icon('check-circle')</span>
+                    @else
+                        <span class="text-neg">@icon('cancel')</span>
+                    @endif
+                    {{ trans_choice('settings.users_mfa_x_methods', $mfaMethods->count()) }}
+                </div>
+                <div class="text-m-right">
+                    @if($user->id === user()->id)
+                        <a href="{{ url('/mfa/setup')  }}" class="button outline">{{ trans('settings.users_mfa_configure') }}</a>
+                    @endif
+                </div>
+            </div>
+
+        </section>
+
+        @if(user()->id === $user->id && count($activeSocialDrivers) > 0)
             <section class="card content-wrap auto-height">
                 <h2 class="list-heading">{{ trans('settings.users_social_accounts') }}</h2>
                 <p class="text-muted">{{ trans('settings.users_social_accounts_info') }}</p>
@@ -74,8 +95,11 @@
                                 <div role="presentation">@icon('auth/'. $driver, ['style' => 'width: 56px;height: 56px;'])</div>
                                 <div>
                                     @if($user->hasSocialAccount($driver))
-                                        <a href="{{ url("/login/service/{$driver}/detach") }}" aria-label="{{ trans('settings.users_social_disconnect') }} - {{ $driver }}"
-                                           class="button small outline">{{ trans('settings.users_social_disconnect') }}</a>
+                                        <form action="{{ url("/login/service/{$driver}/detach") }}" method="POST">
+                                            {{ csrf_field() }}
+                                            <button aria-label="{{ trans('settings.users_social_disconnect') }} - {{ $driver }}"
+                                                    class="button small outline">{{ trans('settings.users_social_disconnect') }}</button>
+                                        </form>
                                     @else
                                         <a href="{{ url("/login/service/{$driver}") }}" aria-label="{{ trans('settings.users_social_connect') }} - {{ $driver }}"
                                            class="button small outline">{{ trans('settings.users_social_connect') }}</a>
@@ -86,6 +110,10 @@
                     </div>
                 </div>
             </section>
+        @endif
+
+        @if((user()->id === $user->id && userCan('access-api')) || userCan('users-manage'))
+            @include('users.api-tokens.parts.list', ['user' => $user])
         @endif
     </div>
 

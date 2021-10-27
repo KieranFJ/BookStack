@@ -1,3 +1,7 @@
-<?php namespace BookStack\Exceptions;
+<?php
 
-class UserTokenNotFoundException extends \Exception {}
+namespace BookStack\Exceptions;
+
+class UserTokenNotFoundException extends \Exception
+{
+}

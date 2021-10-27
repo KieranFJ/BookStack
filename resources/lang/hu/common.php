@@ -33,14 +33,26 @@ return [
     'copy' => 'Másolás',
     'reply' => 'Válasz',
     'delete' => 'Törlés',
+    'delete_confirm' => 'Törlés megerősítése',
     'search' => 'Keresés',
     'search_clear' => 'Keresés törlése',
     'reset' => 'Visszaállítás',
     'remove' => 'Eltávolítás',
     'add' => 'Hozzáadás',
+    'configure' => 'Configure',
+    'fullscreen' => 'Teljes képernyő',
+    'favourite' => 'Favourite',
+    'unfavourite' => 'Unfavourite',
+    'next' => 'Next',
+    'previous' => 'Previous',
 
     // Sort Options
+    'sort_options' => 'Rendezési beállítások',
+    'sort_direction_toggle' => 'Rendezési irány váltása',
+    'sort_ascending' => 'Növekvő sorrend',
+    'sort_descending' => 'Csökkenő sorrend',
     'sort_name' => 'Név',
+    'sort_default' => 'Default',
     'sort_created_at' => 'Létrehozás dátuma',
     'sort_updated_at' => 'Frissítés dátuma',
 
@@ -49,22 +61,35 @@ return [
     'no_activity' => 'Nincs megjeleníthető aktivitás',
     'no_items' => 'Nincsenek elérhető elemek',
     'back_to_top' => 'Oldal eleje',
+    'skip_to_main_content' => 'Skip to main content',
     'toggle_details' => 'Részletek átkapcsolása',
     'toggle_thumbnails' => 'Bélyegképek átkapcsolása',
     'details' => 'Részletek',
     'grid_view' => 'Rács nézet',
     'list_view' => 'Lista nézet',
     'default' => 'Alapértelmezés szerinti',
+    'breadcrumb' => 'Morzsa',
 
     // Header
+    'header_menu_expand' => 'Expand Header Menu',
+    'profile_menu' => 'Profil menü',
     'view_profile' => 'Profil megtekintése',
     'edit_profile' => 'Profil szerkesztése',
+    'dark_mode' => 'Sötét mód',
+    'light_mode' => 'Világos mód',
 
     // Layout tabs
     'tab_info' => 'Információ',
+    'tab_info_label' => 'Tab: Show Secondary Information',
     'tab_content' => 'Tartalom',
+    'tab_content_label' => 'Tab: Show Primary Content',
 
     // Email Content
     'email_action_help' => 'Probléma esetén a lenti ":actionText" gombra kell kattintani, majd ki kell másolni a lenti webcímet és be kell illeszteni egy böngészőbe:',
     'email_rights' => 'Minden jog fenntartva',
+
+    // Footer Link Options
+    // Not directly used but available for convenience to users.
+    'privacy_policy' => 'Privacy Policy',
+    'terms_of_service' => 'Terms of Service',
 ];

@@ -1,11 +1,9 @@
 <?php
-
+/**
+ * Activity text strings.
+ * Is used for all the text within activity logs & notifications.
+ */
 return [
-
-    /**
-     * Activity text strings.
-     * Is used for all the text within activity logs & notifications.
-     */
 
     // Pages
     'page_create'                 => '创建了页面',
@@ -36,7 +34,7 @@ return [
     'book_delete_notification'    => '图书已删除成功',
     'book_sort'                   => '排序了图书',
     'book_sort_notification'      => '图书已重新排序成功',
-    
+
     // Bookshelves
     'bookshelf_create'            => '创建了书架',
     'bookshelf_create_notification'    => '书架已成功创建',
@@ -45,6 +43,15 @@ return [
     'bookshelf_delete'                 => '删除了书架',
     'bookshelf_delete_notification'    => '书架已成功删除',
 
+    // Favourites
+    'favourite_add_notification' => '":name" 已添加到你的收藏',
+    'favourite_remove_notification' => '":name" 已从你的收藏中删除',
+
+    // MFA
+    'mfa_setup_method_notification' => '多重身份认证设置成功',
+    'mfa_remove_method_notification' => '多重身份认证已成功移除',
+
     // Other
     'commented_on'                => '评论',
+    'permissions_update'          => '权限已更新',
 ];

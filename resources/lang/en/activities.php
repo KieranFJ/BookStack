@@ -43,6 +43,15 @@ return [
     'bookshelf_delete'                 => 'deleted bookshelf',
     'bookshelf_delete_notification'    => 'Bookshelf Successfully Deleted',
 
+    // Favourites
+    'favourite_add_notification' => '":name" has been added to your favourites',
+    'favourite_remove_notification' => '":name" has been removed from your favourites',
+
+    // MFA
+    'mfa_setup_method_notification' => 'Multi-factor method successfully configured',
+    'mfa_remove_method_notification' => 'Multi-factor method successfully removed',
+
     // Other
     'commented_on'                => 'commented on',
+    'permissions_update'          => 'updated permissions',
 ];

@@ -1,22 +1,15 @@
-@extends('simple-layout')
+@extends('layouts.simple')
 
 @section('body')
     <div class="container small">
 
-        <div class="grid left-focus v-center no-row-gap">
-            <div class="py-m">
-                @include('settings.navbar', ['selected' => 'settings'])
-            </div>
-            <div class="text-right mb-l px-m">
-                <br>
-                BookStack @if(strpos($version, 'v') !== 0) version @endif {{ $version }}
-            </div>
-        </div>
+        @include('settings.parts.navbar-with-version', ['selected' => 'settings'])
 
         <div class="card content-wrap auto-height">
-            <h2 class="list-heading">{{ trans('settings.app_features_security') }}</h2>
+            <h2 id="features" class="list-heading">{{ trans('settings.app_features_security') }}</h2>
             <form action="{{ url("/settings") }}" method="POST">
                 {!! csrf_field() !!}
+                <input type="hidden" name="section" value="features">
 
                 <div class="setting-list">
 
@@ -32,7 +25,7 @@
                             @endif
                         </div>
                         <div>
-                            @include('components.toggle-switch', [
+                            @include('form.toggle-switch', [
                                 'name' => 'setting-app-public',
                                 'value' => setting('app-public'),
                                 'label' => trans('settings.app_public_access_toggle'),
@@ -46,7 +39,7 @@
                             <p class="small">{{ trans('settings.app_secure_images_desc') }}</p>
                         </div>
                         <div>
-                            @include('components.toggle-switch', [
+                            @include('form.toggle-switch', [
                                 'name' => 'setting-app-secure-images',
                                 'value' => setting('app-secure-images'),
                                 'label' => trans('settings.app_secure_images_toggle'),
@@ -60,7 +53,7 @@
                             <p class="small">{!! trans('settings.app_disable_comments_desc') !!}</p>
                         </div>
                         <div>
-                            @include('components.toggle-switch', [
+                            @include('form.toggle-switch', [
                                 'name' => 'setting-app-disable-comments',
                                 'value' => setting('app-disable-comments'),
                                 'label' => trans('settings.app_disable_comments_toggle'),
@@ -78,9 +71,10 @@
         </div>
 
         <div class="card content-wrap auto-height">
-            <h2 class="list-heading">{{ trans('settings.app_customization') }}</h2>
+            <h2 id="customization" class="list-heading">{{ trans('settings.app_customization') }}</h2>
             <form action="{{ url("/settings") }}" method="POST" enctype="multipart/form-data">
                 {!! csrf_field() !!}
+                <input type="hidden" name="section" value="customization">
 
                 <div class="setting-list">
 
@@ -89,9 +83,9 @@
                             <label for="setting-app-name" class="setting-list-label">{{ trans('settings.app_name') }}</label>
                             <p class="small">{{ trans('settings.app_name_desc') }}</p>
                         </div>
-                        <div>
+                        <div class="pt-xs">
                             <input type="text" value="{{ setting('app-name', 'BookStack') }}" name="setting-app-name" id="setting-app-name">
-                            @include('components.toggle-switch', [
+                            @include('form.toggle-switch', [
                                 'name' => 'setting-app-name-header',
                                 'value' => setting('app-name-header'),
                                 'label' => trans('settings.app_name_header'),
@@ -104,7 +98,7 @@
                             <label class="setting-list-label">{{ trans('settings.app_editor') }}</label>
                             <p class="small">{{ trans('settings.app_editor_desc') }}</p>
                         </div>
-                        <div>
+                        <div class="pt-xs">
                             <select name="setting-app-editor" id="setting-app-editor">
                                 <option @if(setting('app-editor') === 'wysiwyg') selected @endif value="wysiwyg">WYSIWYG</option>
                                 <option @if(setting('app-editor') === 'markdown') selected @endif value="markdown">Markdown</option>
@@ -117,8 +111,8 @@
                             <label class="setting-list-label">{{ trans('settings.app_logo') }}</label>
                             <p class="small">{!! trans('settings.app_logo_desc') !!}</p>
                         </div>
-                        <div>
-                            @include('components.image-picker', [
+                        <div class="pt-xs">
+                            @include('form.image-picker', [
                                      'removeName' => 'setting-app-logo',
                                      'removeValue' => 'none',
                                      'defaultImage' => url('/logo.png'),
@@ -129,16 +123,40 @@
                         </div>
                     </div>
 
+                    <!-- Primary Color -->
                     <div class="grid half gap-xl">
                         <div>
                             <label class="setting-list-label">{{ trans('settings.app_primary_color') }}</label>
                             <p class="small">{!! trans('settings.app_primary_color_desc') !!}</p>
                         </div>
-                        <div setting-app-color-picker class="text-m-right">
-                            <input type="color" value="{{ setting('app-color') }}" name="setting-app-color" id="setting-app-color" placeholder="#206ea7">
+                        <div setting-app-color-picker class="text-m-right pt-xs">
+                            <input type="color" data-default="#206ea7" data-current="{{ setting('app-color') }}" value="{{ setting('app-color') }}" name="setting-app-color" id="setting-app-color" placeholder="#206ea7">
                             <input type="hidden" value="{{ setting('app-color-light') }}" name="setting-app-color-light" id="setting-app-color-light">
-                            <br>
-                            <button type="button" class="text-button text-muted mt-s mx-s" setting-app-color-picker-reset>{{ trans('common.reset') }}</button>
+                            <div class="pr-s">
+                                <button type="button" class="text-button text-muted mt-s" setting-app-color-picker-default>{{ trans('common.default') }}</button>
+                                <span class="sep">|</span>
+                                <button type="button" class="text-button text-muted mt-s" setting-app-color-picker-reset>{{ trans('common.reset') }}</button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Entity Color -->
+                    <div class="pb-l">
+                        <div>
+                            <label class="setting-list-label">{{ trans('settings.content_colors') }}</label>
+                            <p class="small">{!! trans('settings.content_colors_desc') !!}</p>
+                        </div>
+                        <div class="grid half pt-m">
+                            <div>
+                                @include('settings.parts.setting-entity-color-picker', ['type' => 'bookshelf'])
+                                @include('settings.parts.setting-entity-color-picker', ['type' => 'book'])
+                                @include('settings.parts.setting-entity-color-picker', ['type' => 'chapter'])
+                            </div>
+                            <div>
+                                @include('settings.parts.setting-entity-color-picker', ['type' => 'page'])
+                                @include('settings.parts.setting-entity-color-picker', ['type' => 'page-draft'])
+                            </div>
                         </div>
                     </div>
 
@@ -147,7 +165,7 @@
                             <label for="setting-app-homepage" class="setting-list-label">{{ trans('settings.app_homepage') }}</label>
                             <p class="small">{{ trans('settings.app_homepage_desc') }}</p>
                         </div>
-                        <div>
+                        <div class="pt-xs">
                             <select name="setting-app-homepage-type" id="setting-app-homepage-type">
                                 <option @if(setting('app-homepage-type') === 'default') selected @endif value="default">{{ trans('common.default') }}</option>
                                 <option @if(setting('app-homepage-type') === 'books') selected @endif value="books">{{ trans('entities.books') }}</option>
@@ -156,9 +174,15 @@
                             </select>
 
                             <div page-picker-container style="display: none;" class="mt-m">
-                                @include('components.page-picker', ['name' => 'setting-app-homepage', 'placeholder' => trans('settings.app_homepage_select'), 'value' => setting('app-homepage')])
+                                @include('settings.parts.page-picker', ['name' => 'setting-app-homepage', 'placeholder' => trans('settings.app_homepage_select'), 'value' => setting('app-homepage')])
                             </div>
                         </div>
+                    </div>
+
+                    <div>
+                        <label for="setting-app-privacy-link" class="setting-list-label">{{ trans('settings.app_footer_links') }}</label>
+                        <p class="small mb-m">{{ trans('settings.app_footer_links_desc') }}</p>
+                        @include('settings.parts.footer-links', ['name' => 'setting-app-footer-links', 'value' => setting('app-footer-links', [])])
                     </div>
 
 
@@ -179,9 +203,10 @@
         </div>
 
         <div class="card content-wrap auto-height">
-            <h2 class="list-heading">{{ trans('settings.reg_settings') }}</h2>
+            <h2 id="registration" class="list-heading">{{ trans('settings.reg_settings') }}</h2>
             <form action="{{ url("/settings") }}" method="POST">
                 {!! csrf_field() !!}
+                <input type="hidden" name="section" value="registration">
 
                 <div class="setting-list">
                     <div class="grid half gap-xl">
@@ -190,16 +215,21 @@
                             <p class="small">{!! trans('settings.reg_enable_desc') !!}</p>
                         </div>
                         <div>
-                            @include('components.toggle-switch', [
+                            @include('form.toggle-switch', [
                                 'name' => 'setting-registration-enabled',
                                 'value' => setting('registration-enabled'),
                                 'label' => trans('settings.reg_enable_toggle')
                             ])
 
+                            @if(in_array(config('auth.method'), ['ldap', 'saml2', 'oidc']))
+                                <div class="text-warn text-small mb-l">{{ trans('settings.reg_enable_external_warning') }}</div>
+                            @endif
+
                             <label for="setting-registration-role">{{ trans('settings.reg_default_role') }}</label>
                             <select id="setting-registration-role" name="setting-registration-role" @if($errors->has('setting-registration-role')) class="neg" @endif>
                                 @foreach(\BookStack\Auth\Role::all() as $role)
-                                    <option value="{{$role->id}}" data-role-name="{{ $role->name }}"
+                                    <option value="{{$role->id}}"
+                                            data-system-role-name="{{ $role->system_name ?? '' }}"
                                             @if(setting('registration-role', \BookStack\Auth\Role::first()->id) == $role->id) selected @endif
                                     >
                                         {{ $role->display_name }}
@@ -214,7 +244,7 @@
                             <label for="setting-registration-restrict" class="setting-list-label">{{ trans('settings.reg_confirm_restrict_domain') }}</label>
                             <p class="small">{!! trans('settings.reg_confirm_restrict_domain_desc') !!}</p>
                         </div>
-                        <div>
+                        <div class="pt-xs">
                             <input type="text" id="setting-registration-restrict" name="setting-registration-restrict" placeholder="{{ trans('settings.reg_confirm_restrict_domain_placeholder') }}" value="{{ setting('registration-restrict', '') }}">
                         </div>
                     </div>
@@ -225,7 +255,7 @@
                             <p class="small">{{ trans('settings.reg_confirm_email_desc') }}</p>
                         </div>
                         <div>
-                            @include('components.toggle-switch', [
+                            @include('form.toggle-switch', [
                                 'name' => 'setting-registration-confirmation',
                                 'value' => setting('registration-confirmation'),
                                 'label' => trans('settings.reg_email_confirmation_toggle')
@@ -243,6 +273,5 @@
 
     </div>
 
-    @include('components.image-manager', ['imageType' => 'system'])
-    @include('components.entity-selector-popup', ['entityTypes' => 'page'])
+    @include('entities.selector-popup', ['entityTypes' => 'page'])
 @stop

@@ -3,6 +3,7 @@
 namespace BookStack\Http\Controllers\Auth;
 
 use BookStack\Auth\Access\EmailConfirmationService;
+use BookStack\Auth\Access\LoginService;
 use BookStack\Auth\UserRepo;
 use BookStack\Exceptions\ConfirmationEmailException;
 use BookStack\Exceptions\UserTokenExpiredException;
@@ -17,21 +18,21 @@ use Illuminate\View\View;
 class ConfirmEmailController extends Controller
 {
     protected $emailConfirmationService;
+    protected $loginService;
     protected $userRepo;
 
     /**
      * Create a new controller instance.
-     *
-     * @param EmailConfirmationService $emailConfirmationService
-     * @param UserRepo $userRepo
      */
-    public function __construct(EmailConfirmationService $emailConfirmationService, UserRepo $userRepo)
-    {
+    public function __construct(
+        EmailConfirmationService $emailConfirmationService,
+        LoginService $loginService,
+        UserRepo $userRepo
+    ) {
         $this->emailConfirmationService = $emailConfirmationService;
+        $this->loginService = $loginService;
         $this->userRepo = $userRepo;
-        parent::__construct();
     }
-
 
     /**
      * Show the page to tell the user to check their email
@@ -45,35 +46,40 @@ class ConfirmEmailController extends Controller
     /**
      * Shows a notice that a user's email address has not been confirmed,
      * Also has the option to re-send the confirmation email.
-     * @return View
      */
     public function showAwaiting()
     {
-        return view('auth.user-unconfirmed');
+        $user = $this->loginService->getLastLoginAttemptUser();
+
+        return view('auth.user-unconfirmed', ['user' => $user]);
     }
 
     /**
      * Confirms an email via a token and logs the user into the system.
+     *
      * @param $token
-     * @return RedirectResponse|Redirector
+     *
      * @throws ConfirmationEmailException
      * @throws Exception
+     *
+     * @return RedirectResponse|Redirector
      */
     public function confirm($token)
     {
         try {
             $userId = $this->emailConfirmationService->checkTokenAndGetUserId($token);
         } catch (Exception $exception) {
-
             if ($exception instanceof UserTokenNotFoundException) {
-                session()->flash('error', trans('errors.email_confirmation_invalid'));
+                $this->showErrorNotification(trans('errors.email_confirmation_invalid'));
+
                 return redirect('/register');
             }
 
             if ($exception instanceof UserTokenExpiredException) {
                 $user = $this->userRepo->getById($exception->userId);
                 $this->emailConfirmationService->sendConfirmation($user);
-                session()->flash('error', trans('errors.email_confirmation_expired'));
+                $this->showErrorNotification(trans('errors.email_confirmation_expired'));
+
                 return redirect('/register/confirm');
             }
 
@@ -84,35 +90,37 @@ class ConfirmEmailController extends Controller
         $user->email_confirmed = true;
         $user->save();
 
-        auth()->login($user);
-        session()->flash('success', trans('auth.email_confirm_success'));
         $this->emailConfirmationService->deleteByUser($user);
+        $this->showSuccessNotification(trans('auth.email_confirm_success'));
+        $this->loginService->login($user, auth()->getDefaultDriver());
 
         return redirect('/');
     }
 
-
     /**
-     * Resend the confirmation email
+     * Resend the confirmation email.
+     *
      * @param Request $request
+     *
      * @return View
      */
     public function resend(Request $request)
     {
         $this->validate($request, [
-            'email' => 'required|email|exists:users,email'
+            'email' => 'required|email|exists:users,email',
         ]);
         $user = $this->userRepo->getByEmail($request->get('email'));
 
         try {
             $this->emailConfirmationService->sendConfirmation($user);
         } catch (Exception $e) {
-            session()->flash('error', trans('auth.email_confirm_send_error'));
+            $this->showErrorNotification(trans('auth.email_confirm_send_error'));
+
             return redirect('/register/confirm');
         }
 
-        session()->flash('success', trans('auth.email_confirm_resent'));
+        $this->showSuccessNotification(trans('auth.email_confirm_resent'));
+
         return redirect('/register/confirm');
     }
-
 }

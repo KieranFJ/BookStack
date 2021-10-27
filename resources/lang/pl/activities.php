@@ -1,11 +1,9 @@
 <?php
-
+/**
+ * Activity text strings.
+ * Is used for all the text within activity logs & notifications.
+ */
 return [
-
-    /**
-     * Activity text strings.
-     * Is used for all the text within activity logs & notifications.
-     */
 
     // Pages
     'page_create'                 => 'utworzono stronę',
@@ -28,14 +26,14 @@ return [
     'chapter_move'                => 'przeniesiono rozdział',
 
     // Books
-    'book_create'                 => 'utworzono podręcznik',
-    'book_create_notification'    => 'Podręcznik utworzony pomyślnie',
-    'book_update'                 => 'zaktualizowano podręcznik',
-    'book_update_notification'    => 'Podręcznik zaktualizowany pomyślnie',
-    'book_delete'                 => 'usunięto podręcznik',
-    'book_delete_notification'    => 'Podręcznik usunięty pomyślnie',
-    'book_sort'                   => 'posortowano podręcznik',
-    'book_sort_notification'      => 'Podręcznik posortowany pomyślnie',
+    'book_create'                 => 'utworzono książkę',
+    'book_create_notification'    => 'Książkę utworzony pomyślnie',
+    'book_update'                 => 'zaktualizowano książkę',
+    'book_update_notification'    => 'Książkę zaktualizowany pomyślnie',
+    'book_delete'                 => 'usunięto książkę',
+    'book_delete_notification'    => 'Książkę usunięty pomyślnie',
+    'book_sort'                   => 'posortowano książkę',
+    'book_sort_notification'      => 'Książkę posortowany pomyślnie',
 
     // Bookshelves
     'bookshelf_create'            => 'utworzono półkę',
@@ -45,6 +43,15 @@ return [
     'bookshelf_delete'                 => 'usunięto półkę',
     'bookshelf_delete_notification'    => 'Półka usunięta pomyślnie',
 
+    // Favourites
+    'favourite_add_notification' => '":name" został dodany do Twoich ulubionych',
+    'favourite_remove_notification' => '":name" został usunięty z ulubionych',
+
+    // MFA
+    'mfa_setup_method_notification' => 'Metoda wieloskładnikowa została pomyślnie skonfigurowana',
+    'mfa_remove_method_notification' => 'Metoda wieloskładnikowa pomyślnie usunięta',
+
     // Other
     'commented_on'                => 'skomentował',
+    'permissions_update'          => 'zaktualizowane uprawnienia',
 ];

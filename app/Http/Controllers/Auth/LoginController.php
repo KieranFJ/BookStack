@@ -2,14 +2,15 @@
 
 namespace BookStack\Http\Controllers\Auth;
 
-use BookStack\Auth\Access\LdapService;
+use Activity;
+use BookStack\Auth\Access\LoginService;
 use BookStack\Auth\Access\SocialAuthService;
-use BookStack\Auth\UserRepo;
-use BookStack\Exceptions\AuthException;
+use BookStack\Exceptions\LoginAttemptEmailNeededException;
+use BookStack\Exceptions\LoginAttemptException;
 use BookStack\Http\Controllers\Controller;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
@@ -27,35 +28,29 @@ class LoginController extends Controller
     use AuthenticatesUsers;
 
     /**
-     * Where to redirect users after login.
-     *
-     * @var string
+     * Redirection paths.
      */
     protected $redirectTo = '/';
-
     protected $redirectPath = '/';
     protected $redirectAfterLogout = '/login';
 
     protected $socialAuthService;
-    protected $ldapService;
-    protected $userRepo;
+    protected $loginService;
 
     /**
      * Create a new controller instance.
-     *
-     * @param \BookStack\Auth\\BookStack\Auth\Access\SocialAuthService $socialAuthService
-     * @param LdapService $ldapService
-     * @param \BookStack\Auth\UserRepo $userRepo
      */
-    public function __construct(SocialAuthService $socialAuthService, LdapService $ldapService, UserRepo $userRepo)
+    public function __construct(SocialAuthService $socialAuthService, LoginService $loginService)
     {
-        $this->middleware('guest', ['only' => ['getLogin', 'postLogin']]);
+        $this->middleware('guest', ['only' => ['getLogin', 'login']]);
+        $this->middleware('guard:standard,ldap', ['only' => ['login']]);
+        $this->middleware('guard:standard,ldap,oidc', ['only' => ['logout']]);
+
         $this->socialAuthService = $socialAuthService;
-        $this->ldapService = $ldapService;
-        $this->userRepo = $userRepo;
+        $this->loginService = $loginService;
+
         $this->redirectPath = url('/');
         $this->redirectAfterLogout = url('/login');
-        parent::__construct();
     }
 
     public function username()
@@ -64,55 +59,15 @@ class LoginController extends Controller
     }
 
     /**
-     * Overrides the action when a user is authenticated.
-     * If the user authenticated but does not exist in the user table we create them.
-     * @param Request $request
-     * @param Authenticatable $user
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws AuthException
-     * @throws \BookStack\Exceptions\LdapException
+     * Get the needed authorization credentials from the request.
      */
-    protected function authenticated(Request $request, Authenticatable $user)
+    protected function credentials(Request $request)
     {
-        // Explicitly log them out for now if they do no exist.
-        if (!$user->exists) {
-            auth()->logout($user);
-        }
-
-        if (!$user->exists && $user->email === null && !$request->filled('email')) {
-            $request->flash();
-            session()->flash('request-email', true);
-            return redirect('/login');
-        }
-
-        if (!$user->exists && $user->email === null && $request->filled('email')) {
-            $user->email = $request->get('email');
-        }
-
-        if (!$user->exists) {
-            // Check for users with same email already
-            $alreadyUser = $user->newQuery()->where('email', '=', $user->email)->count() > 0;
-            if ($alreadyUser) {
-                throw new AuthException(trans('errors.error_user_exists_different_creds', ['email' => $user->email]));
-            }
-
-            $user->save();
-            $this->userRepo->attachDefaultRole($user);
-            auth()->login($user);
-        }
-
-        // Sync LDAP groups if required
-        if ($this->ldapService->shouldSyncGroups()) {
-            $this->ldapService->syncGroups($user, $request->get($this->username()));
-        }
-
-        return redirect()->intended('/');
+        return $request->only('username', 'email', 'password');
     }
 
     /**
      * Show the application login form.
-     * @param Request $request
-     * @return \Illuminate\Http\Response
      */
     public function getLogin(Request $request)
     {
@@ -121,23 +76,179 @@ class LoginController extends Controller
 
         if ($request->has('email')) {
             session()->flashInput([
-                'email' => $request->get('email'),
-                'password' => (config('app.env') === 'demo') ? $request->get('password', '') : ''
+                'email'    => $request->get('email'),
+                'password' => (config('app.env') === 'demo') ? $request->get('password', '') : '',
             ]);
         }
 
-        return view('auth.login', ['socialDrivers' => $socialDrivers, 'authMethod' => $authMethod]);
+        // Store the previous location for redirect after login
+        $this->updateIntendedFromPrevious();
+
+        return view('auth.login', [
+            'socialDrivers' => $socialDrivers,
+            'authMethod'    => $authMethod,
+        ]);
     }
 
     /**
-     * Redirect to the relevant social site.
-     * @param $socialDriver
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse
-     * @throws \BookStack\Exceptions\SocialDriverNotConfigured
+     * Handle a login request to the application.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     *
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Http\JsonResponse
      */
-    public function getSocialLogin($socialDriver)
+    public function login(Request $request)
     {
-        session()->put('social-callback', 'login');
-        return $this->socialAuthService->startLogIn($socialDriver);
+        $this->validateLogin($request);
+        $username = $request->get($this->username());
+
+        // If the class is using the ThrottlesLogins trait, we can automatically throttle
+        // the login attempts for this application. We'll key this by the username and
+        // the IP address of the client making these requests into this application.
+        if (method_exists($this, 'hasTooManyLoginAttempts') &&
+            $this->hasTooManyLoginAttempts($request)) {
+            $this->fireLockoutEvent($request);
+
+            Activity::logFailedLogin($username);
+
+            return $this->sendLockoutResponse($request);
+        }
+
+        try {
+            if ($this->attemptLogin($request)) {
+                return $this->sendLoginResponse($request);
+            }
+        } catch (LoginAttemptException $exception) {
+            Activity::logFailedLogin($username);
+
+            return $this->sendLoginAttemptExceptionResponse($exception, $request);
+        }
+
+        // If the login attempt was unsuccessful we will increment the number of attempts
+        // to login and redirect the user back to the login form. Of course, when this
+        // user surpasses their maximum number of attempts they will get locked out.
+        $this->incrementLoginAttempts($request);
+
+        Activity::logFailedLogin($username);
+
+        return $this->sendFailedLoginResponse($request);
+    }
+
+    /**
+     * Attempt to log the user into the application.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return bool
+     */
+    protected function attemptLogin(Request $request)
+    {
+        return $this->loginService->attempt(
+            $this->credentials($request),
+            auth()->getDefaultDriver(),
+            $request->filled('remember')
+        );
+    }
+
+    /**
+     * The user has been authenticated.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param mixed                    $user
+     *
+     * @return mixed
+     */
+    protected function authenticated(Request $request, $user)
+    {
+        return redirect()->intended($this->redirectPath());
+    }
+
+    /**
+     * Validate the user login request.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     *
+     * @return void
+     */
+    protected function validateLogin(Request $request)
+    {
+        $rules = ['password' => 'required|string'];
+        $authMethod = config('auth.method');
+
+        if ($authMethod === 'standard') {
+            $rules['email'] = 'required|email';
+        }
+
+        if ($authMethod === 'ldap') {
+            $rules['username'] = 'required|string';
+            $rules['email'] = 'email';
+        }
+
+        $request->validate($rules);
+    }
+
+    /**
+     * Send a response when a login attempt exception occurs.
+     */
+    protected function sendLoginAttemptExceptionResponse(LoginAttemptException $exception, Request $request)
+    {
+        if ($exception instanceof LoginAttemptEmailNeededException) {
+            $request->flash();
+            session()->flash('request-email', true);
+        }
+
+        if ($message = $exception->getMessage()) {
+            $this->showWarningNotification($message);
+        }
+
+        return redirect('/login');
+    }
+
+    /**
+     * Get the failed login response instance.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    protected function sendFailedLoginResponse(Request $request)
+    {
+        throw ValidationException::withMessages([
+            $this->username() => [trans('auth.failed')],
+        ])->redirectTo('/login');
+    }
+
+    /**
+     * Update the intended URL location from their previous URL.
+     * Ignores if not from the current app instance or if from certain
+     * login or authentication routes.
+     */
+    protected function updateIntendedFromPrevious(): void
+    {
+        // Store the previous location for redirect after login
+        $previous = url()->previous('');
+        $isPreviousFromInstance = (strpos($previous, url('/')) === 0);
+        if (!$previous || !setting('app-public') || !$isPreviousFromInstance) {
+            return;
+        }
+
+        $ignorePrefixList = [
+            '/login',
+            '/mfa',
+        ];
+
+        foreach ($ignorePrefixList as $ignorePrefix) {
+            if (strpos($previous, url($ignorePrefix)) === 0) {
+                return;
+            }
+        }
+
+        redirect()->setIntendedUrl($previous);
     }
 }

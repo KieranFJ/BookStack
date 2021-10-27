@@ -27,11 +27,11 @@
                     <button type="button" class="text-button" action="reply" aria-label="{{ trans('common.reply') }}" title="{{ trans('common.reply') }}">@icon('reply')</button>
                 @endif
                 @if(userCan('comment-delete', $comment))
-                    <div dropdown class="dropdown-container">
-                        <button type="button" dropdown-toggle aria-haspopup="true" aria-expanded="false" class="text-button" title="{{ trans('common.delete') }}">@icon('delete')</button>
-                        <ul class="dropdown-menu" role="menu">
+                    <div component="dropdown" class="dropdown-container">
+                        <button type="button" refs="dropdown@toggle" aria-haspopup="true" aria-expanded="false" class="text-button" title="{{ trans('common.delete') }}">@icon('delete')</button>
+                        <ul refs="dropdown@menu" class="dropdown-menu" role="menu">
                             <li class="px-m text-small text-muted pb-s">{{trans('entities.comment_delete_confirm')}}</li>
-                            <li><a action="delete" href="#" class="text-button text-neg" >@icon('delete'){{ trans('common.delete') }}</a></li>
+                            <li><button action="delete" type="button" class="text-button text-neg" >@icon('delete'){{ trans('common.delete') }}</button></li>
                         </ul>
                     </div>
                 @endif
@@ -48,7 +48,7 @@
 
     <div comment-content class="content px-s pb-s">
         <div class="form-group loading" style="display: none;">
-            @include('partials.loading-icon', ['text' => trans('entities.comment_deleting')])
+            @include('common.loading-icon', ['text' => trans('entities.comment_deleting')])
         </div>
         {!! $comment->html  !!}
     </div>
@@ -64,7 +64,7 @@
                     <button type="submit" class="button">{{ trans('entities.comment_save') }}</button>
                 </div>
                 <div class="form-group loading" style="display: none;">
-                    @include('partials.loading-icon', ['text' => trans('entities.comment_saving')])
+                    @include('common.loading-icon', ['text' => trans('entities.comment_saving')])
                 </div>
             </form>
         </div>

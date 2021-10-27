@@ -1,9 +1,10 @@
 <?php
+/**
+ * Text used in custom JavaScript driven components.
+ */
 return [
 
-    /**
-     * Image Manager
-     */
+    // Image Manager
     'image_select' => 'Sélectionner une image',
     'image_all' => 'Toutes',
     'image_all_title' => 'Voir toutes les images',
@@ -14,7 +15,7 @@ return [
     'image_load_more' => 'Charger plus',
     'image_image_name' => 'Nom de l\'image',
     'image_delete_used' => 'Cette image est utilisée dans les pages ci-dessous.',
-    'image_delete_confirm' => 'Confirmez que vous souhaitez bien supprimer cette image.',
+    'image_delete_confirm_text' => 'Êtes-vous sûr de vouloir supprimer cette image ?',
     'image_select_image' => 'Sélectionner l\'image',
     'image_dropzone' => 'Glissez les images ici ou cliquez pour les ajouter',
     'images_deleted' => 'Images supprimées',
@@ -24,11 +25,10 @@ return [
     'image_delete_success' => 'Image supprimée avec succès',
     'image_upload_remove' => 'Supprimer',
 
-    /**
-     * Code editor
-     */
-    'code_editor' => 'Editer le code',
+    // Code Editor
+    'code_editor' => 'Éditer le code',
     'code_language' => 'Langage du code',
     'code_content' => 'Contenu du code',
+    'code_session_history' => 'Historique de session',
     'code_save' => 'Enregistrer le code',
 ];
